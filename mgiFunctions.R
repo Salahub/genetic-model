@@ -1,0 +1,118 @@
+source("simulationFunctions.R")
+
+mgiUrl <- "http://www.informatics.jax.org/downloads/reports/"
+mgiPNames <- c(cope.jenk = "MGI_Copeland-Jenkins_Panel.rpt",
+               eucib.bsb = "MGI_EUCIB_BSB_Panel.rpt",
+               eucib.bss = "MGI_EUCIB_BSS_Panel.rpt",
+               jax.bsb = "MGI_JAX_BSB_Panel.rpt",
+               jax.bss = "MGI_JAX_BSS_Panel.rpt",
+               jax.mutbcb = "MGI_JAX_Mouse_Mutant_Resource_BCB_Panel.rpt",
+               jax.mutbss = "MGI_JAX_Mouse_Mutant_Resource_BSS_Panel.rpt",
+               koz.fvc58 = "MGI_Kozak_FvC58_Panel.rpt",
+               koz.fvspr = "MGI_Kozak_FvSpr_Panel.rpt",
+               koz.skive = "MGI_Kozak_Skive_Panel.rpt",
+               mit = "MGI_MIT_Panel.rpt",
+               reev.c16 = "MGI_Reeves_Chr_16_Panel.rpt",
+               seldin = "MGI_Seldin_Panel.rpt",
+               ucla.bsb = "MGI_UCLA_BSB_Panel.rpt")
+mgiMNames <- c("MRK_List1.rpt", "MRK_List2.rpt")
+
+## read in MGI data (http://www.informatics.jax.org/)
+readMGIrpt <- function(file) {
+    raw <- scan(file, what = character(), sep = "\n")
+    leg <- which(raw == "Legend:")
+    lenHead <- leg + 4
+    if (length(leg) == 0) {
+        leg <- which(grepl("^CHR", raw))[1]
+        lenHead <- leg
+    }
+    desc <- paste(raw[1:lenHead], collapse = "\n") # data description
+    dat <- raw[(lenHead+1):length(raw)] # actual data
+    refPos <- regexec("\\tJ\\:[0-9]+(?:, J\\:[0-9]+){0,4}", dat)
+    refs <- sapply(regmatches(dat, refPos), # extract references
+                   function(el) {
+                       if (length(el) == 0) {
+                           ""
+                       } else gsub("\\t", "", el)})
+    data <- unlist(regmatches(dat, refPos, invert = TRUE)) # remove refs
+    mat <- do.call(rbind, strsplit(data[data != ""], "\\t"))
+    rwnms <- mat[1, -(1:3)] # animal numbers/ids
+    colnms <- mat[-1, 3] # symbol field
+    colDesc <- mat[-1, 1:3] # symbol details
+    colnames(colDesc) <- c("chr", "mgiid", "symbol")
+    data <- t(mat[-1,-(1:3)])
+    rownames(data) <- rwnms
+    colnames(data) <- colnms # final data formatting
+    list(summary = desc,
+         markers = data.frame(colDesc, ref = refs[-1]),
+         data = as.data.frame(data)) # return everything
+}
+
+## process the MGI reference material
+readMGIlists <- function(fileList = paste0(mgiUrl, mgiMNames)) {
+    lists <- lapply(fileList, scan, what = character(), sep = "\n")
+    lists <- lapply(lists, gsub, pattern = "\t$", replacement= "\t.")
+    splits <- lapply(lists, strsplit, split = "\t")
+    colnms <- splits[[1]][[1]]
+    data <- do.call(rbind,
+                    lapply(splits, function(splt) do.call(rbind, splt[-1])))
+    colnames(data) <- colnms
+    as.data.frame(data)
+}
+
+## using indices and a reference table, process centiMorgan positions
+processcMs <- function(inds, tab) {
+    sel <- tab[inds] # take indices from table
+    sel[grepl("syntenic", sel)] <- "Inf"
+    suppressWarnings(as.numeric(sel)) # warnings by design
+}
+
+## filtering panel data by marker distances
+filterPanelBycM <- function(panel, locs) {
+    locOrd <- order(locs) # order position
+    toKeep <- is.finite(locs[locOrd]) # drop NAs and Infs
+    outMrk <- data.frame(panel$markers[locOrd[toKeep],],
+                         cMs = locs[locOrd[toKeep]])
+    outMrk <- outMrk[order(outMrk$chr),] # order chromosome
+    list(summary = panel$summary,
+         markers = outMrk, data = panel$data[, outMrk$symbol])
+}
+
+## a correlation helper
+mgiCorrelation <- function(panel, filter = TRUE, cutoff = 0.25) {
+    srtd <- panel$data[, order(panel$markers$chr)] # group chromosomes
+    dotDrop <- apply(srtd, 2, # turn dots to NA
+                     function(mrk) {
+                         temp <- mrk
+                         temp[temp == "."] <- NA
+                         temp
+                     })
+    numer <- apply(dotDrop, 2, function(mrk) unclass(factor(mrk))-1)
+    if (filter) {
+        numMissing <- apply(numer, 2, function(col) sum(is.na(col)))
+        badMrk <- numMissing/nrow(numer) > cutoff # markers missing
+        numer <- numer[, !badMrk] # keep mostly complete
+        badPnlst <- apply(numer, 1,
+                          function(row) sum(is.na(row)))/ncol(numer) > cutoff
+        numer <- numer[!badPnlst, ] # keep mostly complete
+    }
+    cor(numer, use = "pairwise.complete.obs") # NOT pos def
+}
+
+## and one for the theoretical correlation
+mgiTheory <- function(panel, setting) {
+    if (setting == "unclear") setting <- "backcross"
+    pos <- split(panel$markers$cMs, panel$markers$chr)
+    diffs <- lapply(pos, diff) # adjacent distances
+    theoryCor(diffs, setting = setting)
+}
+
+## suppress zeros and reconstruct a correlation matrix
+zeroEigSuppress <- function(sigma) {
+    decom <- eigen(sigma)
+    eigs <- decom$values
+    eigs[eigs < 0] <- 0 # zero negatives
+    recon <- decom$vectors %*% diag(eigs) %*% t(decom$vectors)
+    recon
+}
+
