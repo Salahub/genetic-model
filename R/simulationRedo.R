@@ -212,7 +212,34 @@ quantiles <- matrix(apply(lessthan, 1, sum), nrow = 8)
 
 corrImg(quantiles - diag(5000, nrow = 8, ncol = 8),
         col = colorRampPalette(c("steelblue", "white",
-                                 "firebrick"))(9),
-        breaks = seq(0,10000,length.out = 10))
+                                 "firebrick"))(3),
+                                        #breaks = seq(0,10000,length.out = 20))
+        breaks = c(0, 250, 9750, 10000))
 text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(quantiles/10000, 1, rev)), 2))
+
+par(mfrow = c(8,8), mar = c(0.1,0.1,0.1,0.1))
+for (ii in 1:8) {
+    for (jj in 1:8) {
+        if (ii == jj) {
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            } else if (ii < jj) {
+                tempdens <- density(simCorrs[ii,jj,])
+                plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
+                     xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+                polygon(tempdens, col = "gray50")
+                abline(v = chevCorr[ii,jj], col = "firebrick", lwd = 2)
+            } else {
+                plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                     xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+                if (quantiles[ii,jj] < 250) {
+                    rect(0, 0, 1, 1, col = "steelblue")
+                }
+                if (quantiles[ii,jj] > 9750) {
+                    rect(0, 0, 1, 1, col = "firebrick")
+                }
+                text(0.5, 0.5, round(quantiles[ii,jj]/10000, 2), cex = 4)
+            }
+    }
+}
