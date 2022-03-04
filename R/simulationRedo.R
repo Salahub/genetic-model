@@ -161,7 +161,7 @@ corrImg(chevCorrTheory, xaxt = "n", yaxt = "n", main = "", xlab = "",
 text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(chevCorrTheory, 1, rev)), 2))
 dev.off()
-## difference ouput
+## difference output
 png(paste(imgDir, "chevCorrDiff.png", sep = "/"))
 par(mar = c(0.1, 0.1, 0.1, 0.1))
 corrImg(chevCorrDiff, xaxt = "n", yaxt = "n", main = "", xlab = "",
@@ -201,15 +201,18 @@ for (ii in 1:25) {
 }
 
 ## alternatively, sample more and colour by quantile
-nsim <- 1000
+nsim <- 10000
 simCorrs <- replicate(nsim,
                       popCorrelation(replicate(npop,
                                                sex(F1, F1),
                                                simplify = FALSE)))
+quants <- apply(simCorrs, c(1,2), quantile, probs = seq(0,1,0.025))
 lessthan <- sapply(1:nsim, function(ii) simCorrs[,,ii] <= chevCorr)
-quantiles <- matrix(apply(test, 1, sum), nrow = 8)
+quantiles <- matrix(apply(lessthan, 1, sum), nrow = 8)
 
-corrImg(quantiles - diag(500, nrow = 8, ncol = 8),
+corrImg(quantiles - diag(5000, nrow = 8, ncol = 8),
         col = colorRampPalette(c("steelblue", "white",
                                  "firebrick"))(9),
-        breaks = seq(0,1000,length.out = 10))
+        breaks = seq(0,10000,length.out = 10))
+text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
+     labels = round(t(apply(quantiles/10000, 1, rev)), 2))
