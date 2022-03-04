@@ -218,6 +218,12 @@ corrImg(quantiles - diag(5000, nrow = 8, ncol = 8),
 text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(quantiles/10000, 1, rev)), 2))
 
+quantilePal <- colorRampPalette(c("steelblue", "white",
+                                  "firebrick"))(40)
+quantileCuts <- matrix(as.numeric(cut(quantiles, seq(0, 10000, 250))),
+                       nrow = 8)
+
+#png("test.png")
 par(mfrow = c(8,8), mar = c(0.1,0.1,0.1,0.1))
 for (ii in 1:8) {
     for (jj in 1:8) {
@@ -233,13 +239,9 @@ for (ii in 1:8) {
             } else {
                 plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
                      xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-                if (quantiles[ii,jj] < 250) {
-                    rect(0, 0, 1, 1, col = "steelblue")
-                }
-                if (quantiles[ii,jj] > 9750) {
-                    rect(0, 0, 1, 1, col = "firebrick")
-                }
-                text(0.5, 0.5, round(quantiles[ii,jj]/10000, 2), cex = 4)
+                rect(0, 0, 1, 1, col = quantilePal[quantileCuts[ii,jj]])
+                text(0.5, 0.5, quantiles[ii,jj], cex = 2)
             }
     }
 }
+#dev.off()
