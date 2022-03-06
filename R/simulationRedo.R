@@ -219,8 +219,8 @@ text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(quantiles/10000, 1, rev)), 2))
 
 quantilePal <- colorRampPalette(c("steelblue", "white",
-                                  "firebrick"))(40)
-quantileCuts <- matrix(as.numeric(cut(quantiles, seq(0, 10000, 250))),
+                                  "firebrick"))(3)
+quantileCuts <- matrix(as.numeric(cut(quantiles, c(-1, 250, 9750, 10000))),
                        nrow = 8)
 
 #png("test.png")
@@ -230,18 +230,24 @@ for (ii in 1:8) {
         if (ii == jj) {
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
                  xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            } else if (ii < jj) {
-                tempdens <- density(simCorrs[ii,jj,])
-                plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
-                     xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-                polygon(tempdens, col = "gray50")
-                abline(v = chevCorr[ii,jj], col = "firebrick", lwd = 2)
-            } else {
-                plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                     xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-                rect(0, 0, 1, 1, col = quantilePal[quantileCuts[ii,jj]])
-                text(0.5, 0.5, quantiles[ii,jj], cex = 2)
-            }
+        } else if (ii < jj) {
+            par(mar = c(2.1,0.5,0.5,0.5))
+            tempdens <- density(simCorrs[ii,jj,])
+            plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            axis(1, at = seq(min(tempdens$x), max(tempdens$x),
+                             length.out = 5),
+                 labels = round(seq(min(tempdens$x), max(tempdens$x),
+                             length.out = 5),2))
+            polygon(tempdens, col = "gray50")
+            abline(v = chevCorr[ii,jj], col = "firebrick", lwd = 2)
+        } else {
+            par(mar = c(0.1,0.1,0.1,0.1))
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            rect(0, 0, 1, 1, col = quantilePal[quantileCuts[ii,jj]])
+            text(0.5, 0.5, quantiles[ii,jj], cex = 2)
+        }
     }
 }
 #dev.off()
