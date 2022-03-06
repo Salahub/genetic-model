@@ -43,5 +43,8 @@ mgiPanel.cross <- c("backcross", "backcross", "backcross",
 ## get theoretical correlations
 mgiCorrs.th <- mapply(mgiTheory, mgiFiltered, mgiPanel.cross)
 
+## simulate those that have large enough sample
+mgiPanelSims <- c("jax.bsb",
+
 ## what does suppression of zeroes do to the correlations
 mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)
