@@ -32,7 +32,7 @@ mgiPanels.cMs <- lapply(mgiPanels.mrkr, processcMs,
 mgiFiltered <- mapply(filterPanelBycM, mgiPanels, mgiPanels.cMs,
                       SIMPLIFY = FALSE)
 ## get observed correlation matrices
-mgiCorrs <- lapply(mgiFiltered, mgiCorrelation, filter = FALSE)
+mgiCorrs <- lapply(mgiFiltered, mgiCorrelation)
 
 ##' identify the type of cross of each using the summaries
 mgiPanel.cross <- c("backcross", "backcross", "backcross",
@@ -40,13 +40,18 @@ mgiPanel.cross <- c("backcross", "backcross", "backcross",
                     "backcross", "unclear", "backcross",
                     "backcross", "intercross", "unclear",
                     "backcross", "backcross")
+names(mgiPanel.cross) <- names(mgiFiltered)
 ## get theoretical correlations
 mgiCorrs.th <- mapply(mgiTheory, mgiFiltered, mgiPanel.cross)
 
-## simulate those that have large enough sample
-mgiPanelSims <- c("cope.jenk" = 1, "jax.bsb" = 4, "jax.bss" = 5,
-                  "koz.fvc58" = 8, "koz.skive" = 10, "mit" = 11,
-                  "seldin" = 13, "ucla.bsb" = 14)
+## simulate those that have large enough sample (removing bad markers)
+simPanels <- mgiFiltered[c("jax.bsb", "jax.bss", "mit", "ucla.bsb")]
+simPanels <- lapply(simPanels, mgiDropZeroPanelist)
+simP.filt <- lapply(simPanels, mgiDropBadMarker)
+simP.corr <- lapply(simP.filt, mgiCorrelation, use = "all.obs")
+simP.th <- mapply(mgiTheory, simP.filt, mgiPanel.cross[names(simPanels)])
+
+## simulate a particular panel
 
 ## what does suppression of zeroes do to the correlations
 mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)

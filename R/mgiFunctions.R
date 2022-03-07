@@ -79,7 +79,8 @@ filterPanelBycM <- function(panel, locs) {
 }
 
 ## a correlation helper
-mgiCorrelation <- function(panel, filter = TRUE, cutoff = 0.25) {
+mgiCorrelation <- function(panel, use = "pairwise.complete.obs",
+                           method = "pearson") {
     srtd <- panel$data[, order(panel$markers$chr)] # group chromosomes
     dotDrop <- apply(srtd, 2, # turn dots to NA
                      function(mrk) {
@@ -88,15 +89,7 @@ mgiCorrelation <- function(panel, filter = TRUE, cutoff = 0.25) {
                          temp
                      })
     numer <- apply(dotDrop, 2, function(mrk) unclass(factor(mrk))-1)
-    if (filter) {
-        numMissing <- apply(numer, 2, function(col) sum(is.na(col)))
-        badMrk <- numMissing/nrow(numer) > cutoff # markers missing
-        numer <- numer[, !badMrk] # keep mostly complete
-        badPnlst <- apply(numer, 1,
-                          function(row) sum(is.na(row)))/ncol(numer) > cutoff
-        numer <- numer[!badPnlst, ] # keep mostly complete
-    }
-    cor(numer, use = "pairwise.complete.obs") # NOT pos def
+    cor(numer, use = use, method = method) # NOT pos def
 }
 
 ## and one for the theoretical correlation
@@ -105,6 +98,22 @@ mgiTheory <- function(panel, setting) {
     pos <- split(panel$markers$cMs, panel$markers$chr)
     diffs <- lapply(pos, diff) # adjacent distances
     theoryCor(diffs, setting = setting)
+}
+
+## drop bad panelists
+mgiDropZeroPanelist <- function(panel) {
+    bad <- apply(panel$data, 1, function(row) all(row == "."))
+    panel$data <- panel$data[!bad,]
+    panel
+}
+
+## drop bad markers
+mgiDropBadMarker <- function(panel) {
+    bad <- apply(panel$data, 2, function(col) any(col == "."))
+    goodMarkers <- names(panel$data)[!bad]
+    list(summary = panel$summary,
+         markers = panel$markers[panel$markers$symbol %in% goodMarkers,],
+         data = panel$data[, goodMarkers])
 }
 
 ## suppress zeros and reconstruct a correlation matrix
