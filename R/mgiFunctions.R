@@ -116,6 +116,38 @@ mgiDropBadMarker <- function(panel) {
          data = panel$data[, goodMarkers])
 }
 
+## simulate a panel based on a setting and cM distances
+simulateMGI <- function(marks, npop, reps = 1000,
+                        setting = c("backcross", "intercross")) {
+    chroms <- split(marks$cMs, marks$chr)
+    setting <- match.arg(setting)
+    M <- abiogenesis(length(chroms), sapply(chroms, length),
+                     dists = lapply(chroms, diff), allele = 1)
+    F <- abiogenesis(length(chroms), sapply(chroms, length),
+                     dists = lapply(chroms, diff), allele = 0)
+    F1 <- sex(mother, father)
+    allcors <- vector("list", reps)
+    if (setting == "intercross") {
+        for (ii in 1:reps) {
+            allcors[ii] <- popCorrelation(replicate(npop,
+                                                    sex(F1, F1),
+                                                    simplify = FALSE))
+            if (ii %% 100 == 0) cat("\r -- Simulated population ", ii)
+        }
+    } else if (setting = "backcross") {
+        for (ii in 1:reps) {
+            allcors[ii] <- popCorrelation(replicate(npop,
+                                                    sex(F1, M),
+                                                    simplify = FALSE))
+            if (ii %% 100 == 0) cat("\r -- Simulated population ", ii)
+        }
+    } else {
+        stop("Setting unknown")
+    }
+    allcors
+}
+
+
 ## suppress zeros and reconstruct a correlation matrix
 zeroEigSuppress <- function(sigma) {
     decom <- eigen(sigma)
