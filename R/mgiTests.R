@@ -4,6 +4,8 @@ source("mgiFunctions.R")
 imgDir <- "../img/"
 dataDir <- "../data/"
 
+## READ/PROCESS THE DATA #############################################
+
 ##' another source of experimental data is the MGI website, which has
 ##' a number of "panels" of mice generated in experimental work and
 ##' then measured, typically the crosses used are backcrosses
@@ -31,8 +33,6 @@ mgiPanels.cMs <- lapply(mgiPanels.mrkr, processcMs,
 ##' filter the panels by those markers with known positions
 mgiFiltered <- mapply(filterPanelBycM, mgiPanels, mgiPanels.cMs,
                       SIMPLIFY = FALSE)
-## get observed correlation matrices
-mgiCorrs <- lapply(mgiFiltered, mgiCorrelation)
 
 ##' identify the type of cross of each using the summaries
 mgiPanel.cross <- c("backcross", "backcross", "backcross",
@@ -41,8 +41,20 @@ mgiPanel.cross <- c("backcross", "backcross", "backcross",
                     "backcross", "intercross", "unclear",
                     "backcross", "backcross")
 names(mgiPanel.cross) <- names(mgiFiltered)
+
+## remove unnecessary data
+rm(list = c("mgiMarkers", "mgiPanels.cMs", "mgiPanels.mrkr",
+            "mgiPanels"))
+
+## CORRELATION FOR ALL DATA ##########################################
+
+## get observed correlation matrices
+mgiCorrs <- lapply(mgiFiltered, mgiCorrelation)
 ## get theoretical correlations
 mgiCorrs.th <- mapply(mgiTheory, mgiFiltered, mgiPanel.cross)
+
+
+## FILTERING AND SIMULATING A SUBSET #################################
 
 ## simulate those that have large enough sample (removing bad markers)
 simPanels <- mgiFiltered[c("jax.bsb", "jax.bss", "mit", "ucla.bsb")]
@@ -51,7 +63,7 @@ simP.filt <- lapply(simPanels, mgiDropBadMarker)
 simP.corr <- lapply(simP.filt, mgiCorrelation, use = "all.obs")
 simP.th <- mapply(mgiTheory, simP.filt, mgiPanel.cross[names(simPanels)])
 
-## simulate a particular panel
+
 
 ## what does suppression of zeroes do to the correlations
-mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)
+#mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)

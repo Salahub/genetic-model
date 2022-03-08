@@ -125,18 +125,18 @@ simulateMGI <- function(marks, npop, reps = 1000,
                      dists = lapply(chroms, diff), allele = 1)
     F <- abiogenesis(length(chroms), sapply(chroms, length),
                      dists = lapply(chroms, diff), allele = 0)
-    F1 <- sex(mother, father)
+    F1 <- sex(M, F)
     allcors <- vector("list", reps)
     if (setting == "intercross") {
         for (ii in 1:reps) {
-            allcors[ii] <- popCorrelation(replicate(npop,
+            allcors[[ii]] <- popCorrelation(replicate(npop,
                                                     sex(F1, F1),
                                                     simplify = FALSE))
             if (ii %% 100 == 0) cat("\r -- Simulated population ", ii)
         }
-    } else if (setting = "backcross") {
+    } else if (setting == "backcross") {
         for (ii in 1:reps) {
-            allcors[ii] <- popCorrelation(replicate(npop,
+            allcors[[ii]] <- popCorrelation(replicate(npop,
                                                     sex(F1, M),
                                                     simplify = FALSE))
             if (ii %% 100 == 0) cat("\r -- Simulated population ", ii)
@@ -146,7 +146,6 @@ simulateMGI <- function(marks, npop, reps = 1000,
     }
     allcors
 }
-
 
 ## suppress zeros and reconstruct a correlation matrix
 zeroEigSuppress <- function(sigma) {
