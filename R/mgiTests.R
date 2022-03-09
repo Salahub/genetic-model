@@ -46,6 +46,7 @@ names(mgiPanel.cross) <- names(mgiFiltered)
 rm(list = c("mgiMarkers", "mgiPanels.cMs", "mgiPanels.mrkr",
             "mgiPanels"))
 
+
 ## CORRELATION FOR ALL DATA ##########################################
 
 ## get observed correlation matrices
@@ -57,13 +58,17 @@ mgiCorrs.th <- mapply(mgiTheory, mgiFiltered, mgiPanel.cross)
 ## FILTERING AND SIMULATING A SUBSET #################################
 
 ## simulate those that have large enough sample (removing bad markers)
+## preparation
 simPanels <- mgiFiltered[c("jax.bsb", "jax.bss", "mit", "ucla.bsb")]
 simPanels <- lapply(simPanels, mgiDropZeroPanelist)
 simP.filt <- lapply(simPanels, mgiDropBadMarker)
 simP.corr <- lapply(simP.filt, mgiCorrelation, use = "all.obs")
 simP.th <- mapply(mgiTheory, simP.filt, mgiPanel.cross[names(simPanels)])
 
-
+## the simulation
+simP.sim <- lapply(simP.filt, function(pan) simulateMGI(pan$markers,
+                                                        nrow(pan$data),
+                                                        reps = 250))
 
 ## what does suppression of zeroes do to the correlations
 #mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)
