@@ -241,6 +241,7 @@ for (ii in 1:8) {
                              length.out = 5),2))
             polygon(tempdens, col = "gray50")
             abline(v = chevCorr[ii,jj], col = "firebrick", lwd = 2)
+            abline(v = chevCorrTheory[ii,jj], col = "black", lwd = 2)
         } else {
             par(mar = c(0.1,0.1,0.1,0.1))
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
