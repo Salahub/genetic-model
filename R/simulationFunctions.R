@@ -181,6 +181,17 @@ corrImg <- function(corrs, ...) {
     image(newcorr, ...)
 }
 
+## add chromosome boundaries to the plot
+addChromosomes <- function(marks, ...) {
+    chrTab <- table(marks$chr)[order(as.numeric(unique(marks$chr)))]
+    postns <- c(0, cumsum(chrTab)/sum(chrTab))
+    for (ii in 1:length(chrTab)) {
+        rect(postns[ii], 1 - postns[ii], postns[ii+1],
+             1 - postns[ii+1], ...)
+    }
+}
+
+
 ## add a theoretical correlation calculation function
 theoryCorrelation <- function(d, map = mapHaldane,
                               setting = "intercross") {
