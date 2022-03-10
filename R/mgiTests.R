@@ -67,7 +67,21 @@ simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])
 
 ## simulating these is a huge memory suck, so use the loop here
-pnlnm <- 
+pnlnm <- "jax.bsb" # name of the panel
+pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
+                      nrow(simP.filt[[pnlnm]]$data),
+                      reps = 300)
+pnlQuants <- matrix(0, nrow(pnlSim[[1]]), nrow(pnlSim[[1]]))
+for (ii in seq_along(pnlSim)) {
+    pnlQuants <- pnlQuants + (pnlSim[[ii]] <= simP.corr[[pnlnm]])
+}
+
+png(paste0(gsub("\\.", "", pnlnm), ".png"),
+    width = 720, height = 720)
+corrImg(pnlQuants/length(pnlSim) - diag(0.5, nrow(pnlQuants)),
+        col = c("steelblue", "white", "firebrick"),
+        breaks = c(0, 0.025, 0.975, 1))
+dev.off()
 
 ## what does suppression of zeroes do to the correlations
 #mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)
