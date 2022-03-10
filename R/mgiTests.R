@@ -76,7 +76,7 @@ for (ii in seq_along(pnlSim)) {
     pnlQuants <- pnlQuants + (pnlSim[[ii]] <= simP.corr[[pnlnm]])
 }
 
-png(paste0(gsub("\\.", "", pnlnm), ".png"),
+pdf(paste0(gsub("\\.", "", pnlnm), ".pdf"),
     width = 720, height = 720)
 corrImg(pnlQuants/length(pnlSim) - diag(0.5, nrow(pnlQuants)),
         col = c("steelblue", "white", "firebrick"),
