@@ -67,20 +67,22 @@ simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])
 
 ## simulating these is a huge memory suck, so use the loop here
-pnlnm <- "jax.bss" # name of the panel
+pnlnm <- "mit" # name of the panel
 pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
                       nrow(simP.filt[[pnlnm]]$data),
-                      reps = 300)
+                      reps = 1)
 pnlQuants <- matrix(0, nrow(pnlSim[[1]]), nrow(pnlSim[[1]]))
 for (ii in seq_along(pnlSim)) {
     pnlQuants <- pnlQuants + (pnlSim[[ii]] <= simP.corr[[pnlnm]])
 }
 
-pdf(paste0(gsub("\\.", "", pnlnm), ".pdf"),
-    width = 720, height = 720)
-corrImg(pnlQuants/length(pnlSim) - diag(0.5, nrow(pnlQuants)),
-        col = c("steelblue", "white", "firebrick"),
-        breaks = c(0, 0.025, 0.975, 1))
+png(paste0(gsub("\\.", "", pnlnm), ".png"),
+    width = 540, height = 540, type = "cairo")
+corrImg(simP.corr[[pnlnm]], #pnlSim[[1]],
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42),
+        xaxt = "n", yaxt = "n")
+addChromosomes(simP.filt[[pnlnm]]$markers)
 dev.off()
 
 ## what does suppression of zeroes do to the correlations

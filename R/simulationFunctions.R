@@ -183,9 +183,13 @@ corrImg <- function(corrs, ...) {
 
 ## add chromosome boundaries to the plot
 addChromosomes <- function(marks, ...) {
-    chrTab <- table(marks$chr)[order(as.numeric(unique(marks$chr)))]
-    postns <- c(0, cumsum(chrTab)/sum(chrTab))
+    wid <- 1/(nrow(marks)-1)
+    chrTab <- table(marks$chr)*wid
+    postns <- cumsum(c(-wid/2, chrTab))
     for (ii in 1:length(chrTab)) {
+        abline(v = c(postns[ii], postns[ii+1]),
+               h = c(1 - postns[ii], 1 - postns[ii+1]),
+               col = "gray70")
         rect(postns[ii], 1 - postns[ii], postns[ii+1],
              1 - postns[ii+1], ...)
     }

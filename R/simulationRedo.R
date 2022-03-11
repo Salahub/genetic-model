@@ -223,13 +223,16 @@ quantilePal <- colorRampPalette(c("steelblue", "white",
 quantileCuts <- matrix(as.numeric(cut(quantiles, c(-1, 250, 9750, 10000))),
                        nrow = 8)
 
-#png("test.png")
+png("chevCorrTest.png", width = 720, height = 720, type = "cairo")
+markerNames <- c("D1Mit3", "D1Mit20", "D1Mit74", "D1Mit7", "D1Mit11",
+                 "D1Mit14", "D1Mit17", "D1Mit155")
 par(mfrow = c(8,8), mar = c(0.1,0.1,0.1,0.1))
 for (ii in 1:8) {
     for (jj in 1:8) {
         if (ii == jj) {
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
                  xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            text(0.5, 0.5, markerNames[ii], cex = 1.5)
         } else if (ii < jj) {
             par(mar = c(2.1,0.5,0.5,0.5))
             tempdens <- density(simCorrs[ii,jj,])
@@ -238,10 +241,18 @@ for (ii in 1:8) {
             axis(1, at = seq(min(tempdens$x), max(tempdens$x),
                              length.out = 5),
                  labels = round(seq(min(tempdens$x), max(tempdens$x),
-                             length.out = 5),2))
-            polygon(tempdens, col = "gray50")
+                                    length.out = 5),2))            
+            polygon(tempdens, col = "gray70")
             abline(v = chevCorr[ii,jj], col = "firebrick", lwd = 2)
             abline(v = chevCorrTheory[ii,jj], col = "black", lwd = 2)
+            if (chevCorr[ii,jj] <= chevCorrTheory[ii,jj]) {
+                shadInd <- tempdens$x <= chevCorr[ii,jj]
+            } else {
+                shadInd <- tempdens$x >= chevCorr[ii,jj]
+            }
+            polygon(c(tempdens$x[shadInd], chevCorr[ii,jj]),
+                    c(tempdens$y[shadInd], 0),
+                    col = "gray50")
         } else {
             par(mar = c(0.1,0.1,0.1,0.1))
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
@@ -251,4 +262,4 @@ for (ii in 1:8) {
         }
     }
 }
-#dev.off()
+dev.off()
