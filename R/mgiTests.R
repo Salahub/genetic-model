@@ -67,22 +67,35 @@ simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])
 
 ## simulating these is a huge memory suck, so use the loop here
-pnlnm <- "mit" # name of the panel
+pnlnm <- "ucla.bsb" # name of the panel
 pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
                       nrow(simP.filt[[pnlnm]]$data),
                       reps = 1)
-pnlQuants <- matrix(0, nrow(pnlSim[[1]]), nrow(pnlSim[[1]]))
-for (ii in seq_along(pnlSim)) {
-    pnlQuants <- pnlQuants + (pnlSim[[ii]] <= simP.corr[[pnlnm]])
-}
+#pnlQuants <- matrix(0, nrow(pnlSim[[1]]), nrow(pnlSim[[1]]))
+#for (ii in seq_along(pnlSim)) {
+#    pnlQuants <- pnlQuants + (pnlSim[[ii]] <= simP.corr[[pnlnm]])
+#}
 
-png(paste0(gsub("\\.", "", pnlnm), ".png"),
+png(paste0(gsub("\\.", "", pnlnm), "_sim.png"),
     width = 540, height = 540, type = "cairo")
-corrImg(simP.corr[[pnlnm]], #pnlSim[[1]],
+chrOrder <- order(as.numeric(simP.filt[[pnlnm]]$markers$chr))
+chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
+corrImg(pnlSim[[1]][chrOrder, chrOrder],
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42),
         xaxt = "n", yaxt = "n")
-addChromosomes(simP.filt[[pnlnm]]$markers)
+addChromosomes(simP.filt[[pnlnm]]$markers, chrTabOrder)
+dev.off()
+
+png(paste0(gsub("\\.", "", pnlnm), ".png"),
+    width = 540, height = 540, type = "cairo")
+chrOrder <- order(as.numeric(simP.filt[[pnlnm]]$markers$chr))
+chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
+corrImg(simP.corr[[pnlnm]][chrOrder, chrOrder], 
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42),
+        xaxt = "n", yaxt = "n")
+addChromosomes(simP.filt[[pnlnm]]$markers, chrTabOrder)
 dev.off()
 
 ## what does suppression of zeroes do to the correlations

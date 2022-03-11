@@ -182,9 +182,9 @@ corrImg <- function(corrs, ...) {
 }
 
 ## add chromosome boundaries to the plot
-addChromosomes <- function(marks, ...) {
+addChromosomes <- function(marks, ord, ...) {
     wid <- 1/(nrow(marks)-1)
-    chrTab <- table(marks$chr)*wid
+    chrTab <- table(marks$chr)[ord]*wid
     postns <- cumsum(c(-wid/2, chrTab))
     for (ii in 1:length(chrTab)) {
         abline(v = c(postns[ii], postns[ii+1]),
@@ -192,9 +192,11 @@ addChromosomes <- function(marks, ...) {
                col = "gray70")
         rect(postns[ii], 1 - postns[ii], postns[ii+1],
              1 - postns[ii+1], ...)
+        mtext(names(chrTab)[ii], side = 3, at = postns[ii]/2 + postns[ii+1]/2)
+        mtext(names(chrTab)[ii], side = 2, at = 1 - postns[ii]/2 - postns[ii+1]/2,
+              las = 1)
     }
 }
-
 
 ## add a theoretical correlation calculation function
 theoryCorrelation <- function(d, map = mapHaldane,
