@@ -15,13 +15,17 @@ interCross1 <- replicate(npop, sex(F1, F1), simplify = FALSE)
 backCross1 <- replicate(npop, sex(F1, mother), simplify = FALSE)
 interCor1 <- popCorrelation(interCross1)
 backCor1 <- popCorrelation(backCross1)
-png(paste(imgDir, "inter1.png", sep = "/")) # for output
+corPal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
+corBrk <- seq(-1, 1, length.out = 42)
+png( "inter1.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(interCor1, xaxt = "n", yaxt = "n", main = "")
+corrImg(interCor1, xaxt = "n", yaxt = "n", main = "",
+        col = corPal, breaks = corBrk)
 dev.off() # for output
-png(paste(imgDir, "back1.png", sep = "/")) # for output
+png("back1.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(backCor1, xaxt = "n", yaxt = "n", main = "")
+corrImg(backCor1, xaxt = "n", yaxt = "n", main = "",
+        col = corPal, breaks = corBrk)
 dev.off() # for output
 
 ## now consider the case where markers are not equidistant
@@ -34,13 +38,15 @@ interCross2 <- replicate(npop, sex(F1, F1), simplify = FALSE)
 backCross2 <- replicate(npop, sex(F1, mother), simplify = FALSE)
 interCor2 <- popCorrelation(interCross2)
 backCor2 <- popCorrelation(backCross2)
-png(paste(imgDir, "inter2.png", sep = "/")) # for output
+png("inter2.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(interCor2, xaxt = "n", yaxt = "n", main = "")
+corrImg(interCor2, xaxt = "n", yaxt = "n", main = "",
+        col = corPal, breaks = corBrk)
 dev.off() # for output
-png(paste(imgDir, "back2.png", sep = "/")) # for output
+png("back2.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(backCor2, xaxt = "n", yaxt = "n", main = "")
+corrImg(backCor2, xaxt = "n", yaxt = "n", main = "",
+        col = corPal, breaks = corBrk)
 dev.off() # for output
 
 ## now multiple chromosomes, but keep distances constant
@@ -54,13 +60,15 @@ interCross3 <- replicate(npop, sex(F1, F1), simplify = FALSE)
 backCross3 <- replicate(npop, sex(F1, mother), simplify = FALSE)
 interCor3 <- popCorrelation(interCross3)
 backCor3 <- popCorrelation(backCross3)
-png(paste(imgDir, "inter3.png", sep = "/")) # for output
+png("inter3.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(interCor3, xaxt = "n", yaxt = "n", main = "")
+corrImg(interCor3, xaxt = "n", yaxt = "n", main = "",
+        col = corPal, breaks = corBrk)
 dev.off() # for output
-png(paste(imgDir, "back3.png", sep = "/")) # for output
+png("back3.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(backCor3, xaxt = "n", yaxt = "n", main = "")
+corrImg(backCor3, xaxt = "n", yaxt = "n", main = "",
+        col = corPal, breaks = corBrk)
 dev.off() # for output
 
 ## SIMULATIONS EMULATING OTHER WORK ##################################
@@ -145,18 +153,23 @@ chevLT <- matrix(c(0.5, 0.82, 0.64, 0.48, 0.32, 0.12, 0.08, 0.02,
 chevCorr <- chevLT + t(chevLT)
 chevCorrTheory <- theoryCorrelation(chevDists)
 chevCorrDiff <- chevCorr - chevCorrTheory
-png(paste(imgDir, "chevCorr.png", sep = "/"))
+png("chevCorr.png")
 par(mar = c(0.1, 0.1, 0.1, 0.1))
 ## experimental output
-corrImg(chevCorr, xaxt = "n", yaxt = "n",
+corrImg(chevCorr,
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42), xaxt = "n", yaxt = "n",
         main = "", xlab = "",ylab = "")
 text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(chevCorr, 1, rev)), 2))
 dev.off()
 ## theoretical output
-png(paste(imgDir, "chevCorrTheory.png", sep = "/"))
+png("chevCorrTheory.png")
 par(mar = c(0.1, 0.1, 0.1, 0.1))
-corrImg(chevCorrTheory, xaxt = "n", yaxt = "n", main = "", xlab = "",
+corrImg(chevCorrTheory,
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42),
+        xaxt = "n", yaxt = "n", main = "", xlab = "",
         ylab = "")
 text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(chevCorrTheory, 1, rev)), 2))
@@ -241,7 +254,7 @@ for (ii in 1:8) {
             axis(1, at = seq(min(tempdens$x), max(tempdens$x),
                              length.out = 5),
                  labels = round(seq(min(tempdens$x), max(tempdens$x),
-                                    length.out = 5),2))            
+                                    length.out = 5),2))
             polygon(tempdens, col = "gray70")
             abline(v = chevCorr[ii,jj], col = "firebrick", lwd = 2)
             abline(v = chevCorrTheory[ii,jj], col = "black", lwd = 2)

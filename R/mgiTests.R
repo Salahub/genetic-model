@@ -91,7 +91,7 @@ png(paste0(gsub("\\.", "", pnlnm), ".png"),
     width = 540, height = 540, type = "cairo")
 chrOrder <- order(as.numeric(simP.filt[[pnlnm]]$markers$chr))
 chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
-corrImg(simP.corr[[pnlnm]][chrOrder, chrOrder], 
+corrImg(simP.corr[[pnlnm]][chrOrder, chrOrder],
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42),
         xaxt = "n", yaxt = "n")
