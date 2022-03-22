@@ -84,9 +84,19 @@ father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
 F1 <- sex(mother, father)
 cheverud <- replicate(npop, sex(F1, F1), simplify = FALSE)
 cheverudCor <- popCorrelation(cheverud)
-png(paste(imgDir, "cheverud.png", sep = "/")) # for output
+png("chevSim.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(cheverudCor, xaxt = "n", yaxt = "n", main = "")
+corrImg(cheverudCor, axes = FALSE, main = "",
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42))
+dev.off()
+## theory
+cheverudCorTh <- theoryCor(dists)
+png("chevSimTheory.png") # for output
+par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
+corrImg(cheverudCorTh, axes = FALSE, main = "",
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42))
 dev.off()
 
 ## Landner and Botstein 1989: 12 chromosomes, each 100 cM long with
@@ -100,10 +110,21 @@ father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
 F1 <- sex(mother, father)
 landbot <- replicate(npop, sex(F1, mother), simplify = FALSE)
 landbotCor <- popCorrelation(landbot)
-png(paste(imgDir, "landbot.png", sep = "/")) # for output
+png("LBSim.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
-corrImg(landbotCor)
+corrImg(landbotCor, axes = FALSE, main = "",
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42))
 dev.off()
+## theory
+landbotCorTh <- theoryCor(dists)
+png("LBSimTheory.png") # for output
+par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
+corrImg(landbotCorTh, axes = FALSE, yaxt = "n", main = "",
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
+        breaks = seq(-1, 1, length.out = 42))
+dev.off()
+
 
 ## Li and Ji 2005: ten independent regions which have equidistant
 ## elements, "LD r^2 = 0.8" (r^2 = (p_AB - p_A*p_B)/
@@ -158,7 +179,7 @@ par(mar = c(0.1, 0.1, 0.1, 0.1))
 ## experimental output
 corrImg(chevCorr,
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
-        breaks = seq(-1, 1, length.out = 42), xaxt = "n", yaxt = "n",
+        breaks = seq(-1, 1, length.out = 42), axes = FALSE,
         main = "", xlab = "",ylab = "")
 text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(chevCorr, 1, rev)), 2))
@@ -169,7 +190,7 @@ par(mar = c(0.1, 0.1, 0.1, 0.1))
 corrImg(chevCorrTheory,
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42),
-        xaxt = "n", yaxt = "n", main = "", xlab = "",
+        axes = FALSE, main = "", xlab = "",
         ylab = "")
 text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
      labels = round(t(apply(chevCorrTheory, 1, rev)), 2))
