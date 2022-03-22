@@ -67,7 +67,7 @@ simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])
 
 ## simulating these is a huge memory suck, so use the loop here
-pnlnm <- "ucla.bsb" # name of the panel
+pnlnm <- "jax.bsb" # name of the panel
 pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
                       nrow(simP.filt[[pnlnm]]$data),
                       reps = 1)
@@ -83,7 +83,7 @@ chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
 corrImg(pnlSim[[1]][chrOrder, chrOrder],
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42),
-        xaxt = "n", yaxt = "n")
+        axes = FALSE)
 addChromosomes(simP.filt[[pnlnm]]$markers, chrTabOrder)
 dev.off()
 
@@ -94,7 +94,7 @@ chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
 corrImg(simP.corr[[pnlnm]][chrOrder, chrOrder],
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42),
-        xaxt = "n", yaxt = "n")
+        axes = FALSE)
 addChromosomes(simP.filt[[pnlnm]]$markers, chrTabOrder)
 dev.off()
 

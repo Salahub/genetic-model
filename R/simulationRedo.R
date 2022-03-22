@@ -256,7 +256,6 @@ quantilePal <- colorRampPalette(c("steelblue", "white",
                                   "firebrick"))(3)
 quantileCuts <- matrix(as.numeric(cut(quantiles, c(-1, 250, 9750, 10000))),
                        nrow = 8)
-
 png("chevCorrTest.png", width = 720, height = 720, type = "cairo")
 markerNames <- c("D1Mit3", "D1Mit20", "D1Mit74", "D1Mit7", "D1Mit11",
                  "D1Mit14", "D1Mit17", "D1Mit155")
