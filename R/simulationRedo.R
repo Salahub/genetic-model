@@ -75,6 +75,7 @@ dev.off() # for output
 ## Cheverud 2001: factorial design with one chromosome and different
 ## distances, this is no different than the first case above, but
 ## insert his particulars
+set.seed(201311) # reproducibility
 npop <- 500
 nchrom <- 1
 nmark <- 16
@@ -101,6 +102,7 @@ dev.off()
 
 ## Landner and Botstein 1989: 12 chromosomes, each 100 cM long with
 ## markers placed along each chromosome at 20 cM intervals, backcross
+set.seed(23031) # reproducibility
 npop <- 250
 nchrom <- 12
 nmark <- rep(6, nchrom)

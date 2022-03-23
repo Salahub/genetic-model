@@ -67,6 +67,7 @@ simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])
 
 ## simulating these is a huge memory suck, so use the loop here
+set.seed(30211)
 pnlnm <- "ucla.bsb" # name of the panel
 pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
                       nrow(simP.filt[[pnlnm]]$data),
