@@ -78,6 +78,7 @@ pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
 
 png(paste0(gsub("\\.", "", pnlnm), "_sim.png"),
     width = 540, height = 540, type = "cairo")
+par(mar = c(0.1,0.9,0.9,0.1))
 chrOrder <- order(as.numeric(simP.filt[[pnlnm]]$markers$chr))
 chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
 corrImg(pnlSim[[1]][chrOrder, chrOrder],
@@ -89,6 +90,7 @@ dev.off()
 
 png(paste0(gsub("\\.", "", pnlnm), ".png"),
     width = 540, height = 540, type = "cairo")
+par(mar = c(0.1,0.9,0.9,0.1))
 chrOrder <- order(as.numeric(simP.filt[[pnlnm]]$markers$chr))
 chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
 corrImg(simP.corr[[pnlnm]][chrOrder, chrOrder],

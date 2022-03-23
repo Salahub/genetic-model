@@ -190,11 +190,15 @@ addChromosomes <- function(marks, ord, ...) {
         abline(v = c(postns[ii], postns[ii+1]),
                h = c(1 - postns[ii], 1 - postns[ii+1]),
                col = "gray70")
+        mtext(names(chrTab)[ii], side = 3,
+              at = postns[ii]/2 + postns[ii+1]/2)
+        mtext(names(chrTab)[ii], side = 2,
+              at = 1 - postns[ii]/2 - postns[ii+1]/2,
+              las = 1)
+    }
+    for (ii in 1:length(chrTab)) {
         rect(postns[ii], 1 - postns[ii], postns[ii+1],
              1 - postns[ii+1], ...)
-        mtext(names(chrTab)[ii], side = 3, at = postns[ii]/2 + postns[ii+1]/2)
-        mtext(names(chrTab)[ii], side = 2, at = 1 - postns[ii]/2 - postns[ii+1]/2,
-              las = 1)
     }
 }
 

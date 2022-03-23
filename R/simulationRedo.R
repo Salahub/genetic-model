@@ -93,7 +93,7 @@ dev.off()
 ## theory
 cheverudCorTh <- theoryCor(dists)
 png("chevSimTheory.png") # for output
-par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
+par(mar = c(0.5,0.5,0.5,0.5)) # if no title is desired
 corrImg(cheverudCorTh, axes = FALSE, main = "",
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42))
@@ -111,18 +111,22 @@ F1 <- sex(mother, father)
 landbot <- replicate(npop, sex(F1, mother), simplify = FALSE)
 landbotCor <- popCorrelation(landbot)
 png("LBSim.png") # for output
-par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
+par(mar = c(0.1,0.9,0.9,0.1)) # if no title is desired
 corrImg(landbotCor, axes = FALSE, main = "",
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42))
+addChromosomes(data.frame(chr = rep(1:nchrom, times = nmark)),
+               ord = 1:nchrom)
 dev.off()
 ## theory
 landbotCorTh <- theoryCor(dists)
 png("LBSimTheory.png") # for output
-par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
+par(mar = c(0.1,0.9,0.9,0.1)) # if no title is desired
 corrImg(landbotCorTh, axes = FALSE, yaxt = "n", main = "",
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42))
+addChromosomes(data.frame(chr = rep(1:nchrom, times = nmark)),
+               ord = 1:nchrom)
 dev.off()
 
 
