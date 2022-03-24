@@ -85,6 +85,7 @@ for (ii in 1:nsim) {
         cat("\r Done ", ii)
     }
 }
+diag(pnlQuants) <- 2500
 
 png(paste0(gsub("\\.", "", pnlnm), "_sim.png"),
     width = 540, height = 540, type = "cairo")
