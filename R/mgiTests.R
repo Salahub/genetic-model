@@ -69,13 +69,22 @@ simP.th <- mapply(mgiTheory, simP.filt,
 ## simulating these is a huge memory suck, so use the loop here
 set.seed(30211)
 pnlnm <- "ucla.bsb" # name of the panel
-pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
+#pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
+#                      nrow(simP.filt[[pnlnm]]$data),
+#                      reps = 1000)
+
+nsim <- 5000
+pnlQuants <- matrix(0, nrow(simP.corr[[pnlnm]]),
+                    nrow(simP.corr[[pnlnm]]))
+for (ii in 1:nsim) {
+    pnlSim <- simulateMGI(simP.filt[[pnlnm]]$markers,
                       nrow(simP.filt[[pnlnm]]$data),
                       reps = 1)
-#pnlQuants <- matrix(0, nrow(pnlSim[[1]]), nrow(pnlSim[[1]]))
-#for (ii in seq_along(pnlSim)) {
-#    pnlQuants <- pnlQuants + (pnlSim[[ii]] <= simP.corr[[pnlnm]])
-#}
+    pnlQuants <- pnlQuants + (pnlSim[[1]] <= simP.corr[[pnlnm]])
+    if ((ii %% 100) == 0) {
+        cat("\r Done ", ii)
+    }
+}
 
 png(paste0(gsub("\\.", "", pnlnm), "_sim.png"),
     width = 540, height = 540, type = "cairo")
@@ -85,6 +94,18 @@ chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
 corrImg(pnlSim[[1]][chrOrder, chrOrder],
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42),
+        axes = FALSE)
+addChromosomes(simP.filt[[pnlnm]]$markers, chrTabOrder)
+dev.off()
+
+png(paste0(gsub("\\.", "", pnlnm), "_quant.png"),
+    width = 540, height = 540, type = "cairo")
+par(mar = c(0.1,0.9,0.9,0.1))
+chrOrder <- order(as.numeric(simP.filt[[pnlnm]]$markers$chr))
+chrTabOrder <- order(as.numeric(unique(simP.filt[[pnlnm]]$markers$chr)))
+corrImg(pnlQuants[chrOrder, chrOrder],
+        col = colorRampPalette(c("steelblue", "white", "firebrick"))(3),
+        breaks = c(0, 0.025, 0.975, 1)*nsim,
         axes = FALSE)
 addChromosomes(simP.filt[[pnlnm]]$markers, chrTabOrder)
 dev.off()
