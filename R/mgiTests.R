@@ -93,7 +93,7 @@ dev.off()
 
 ## a correlation test plot of chromosomes 2 and 4 of the common markers
 bsb.24 <- bsb.markers[bsb.markers$chr %in% c("2","4"),]
-## simulate the cross 
+## simulate the cross
 bsb.24sim <- simulateMGI(bsb.24,
                          ceiling(mean(c(nrow(simP.filt[["jax.bsb"]]$data),
                                         nrow(simP.filt[["ucla.bsb"]]$data)))),
@@ -104,13 +104,16 @@ rm(bsb.24sim)
 ## get quantiles
 bsb.jaxcorr <- simP.corr[["jax.bsb"]][bsb.24$symbol, bsb.24$symbol]
 bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.24$symbol, bsb.24$symbol]
-jaxquants <- Reduce(function(x, y) { x + (y <= bsb.jaxcorr)},
-                    bsb.24sim, init = matrix(0, nrow = nrow(bsb.24),
-                                             ncol = nrow(bsb.24)))
+## TO FIX: GET QUANTILES
+jaxquants <- apply(
 uclaquants <- Reduce(function(x, y) { x + (y <= bsb.uclacorr)},
                      bsb.24sim, init = matrix(0, nrow = nrow(bsb.24),
                                               ncol = nrow(bsb.24)))
 
+
+## Stepping stones:
+## correlation matrix -> test plot w/ -1,1 range and coloured cells
+## -> current test plot (more diagnostic, almost significance test)
 
 
 ## the correlation test plot for these two data sets combined
