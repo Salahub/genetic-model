@@ -81,15 +81,15 @@ nsim <- 10000
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 
 ## plot common markers
-png(paste0(gsub("\\.", "", pnlnm), "_common.png"),
-    width = 540, height = 540, type = "cairo")
-corrImg(simP.corr[[pnlnm]][bsb.common[chrOrder],
-                           bsb.common[chrOrder]],
-        col = pal,
-        breaks = seq(-1, 1, length.out = 42),
-        axes = FALSE)
-addChromosomes(bsb.markers, chrTabOrder)
-dev.off()
+#png(paste0(gsub("\\.", "", pnlnm), "_common.png"),
+#    width = 540, height = 540, type = "cairo")
+#corrImg(simP.corr[[pnlnm]][bsb.common[chrOrder],
+#                           bsb.common[chrOrder]],
+#        col = pal,
+#        breaks = seq(-1, 1, length.out = 42),
+#        axes = FALSE)
+#addChromosomes(bsb.markers, chrTabOrder)
+#dev.off()
 
 ## a correlation test plot of chromosomes 2 and 4 of the common markers
 bsb.24 <- bsb.markers[bsb.markers$chr %in% c("2","4"),]
@@ -105,16 +105,48 @@ rm(bsb.24sim)
 bsb.jaxcorr <- simP.corr[["jax.bsb"]][bsb.24$symbol, bsb.24$symbol]
 bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.24$symbol, bsb.24$symbol]
 ## TO FIX: GET QUANTILES
-jaxquants <- apply(
-uclaquants <- Reduce(function(x, y) { x + (y <= bsb.uclacorr)},
-                     bsb.24sim, init = matrix(0, nrow = nrow(bsb.24),
-                                              ncol = nrow(bsb.24)))
+jaxquants <- matrix(rowSums(apply(bsb.24cor, 3,
+                                  function(mat) mat <= bsb.jaxcorr)),
+                    ncol = 8)
+uclaquants <-  matrix(rowSums(apply(bsb.24cor, 3,
+                                  function(mat) mat <= bsb.uclacorr)),
+                    ncol = 8)
 
-
-## Stepping stones:
-## correlation matrix -> test plot w/ -1,1 range and coloured cells
-## -> current test plot (more diagnostic, almost significance test)
-
+## the scatterplot matrix with -1,1 range above the diagonal
+bsb.theorycor <- theoryCor(lapply(split(bsb.24$cMs, bsb.24$chr),
+                                  diff))
+png("bsbCorrDist.png", width = 720, height = 720, type = "cairo")
+markerNames <- bsb.24$symbol
+cuts <- seq(-1, 1, length.out = 42)
+par(mfrow = c(8,8), mar = c(0.1,0.1,0.1,0.1))
+for (ii in 1:8) {
+    for (jj in 1:8) {
+        tempmean <- mean(bsb.24cor[ii,jj,])
+        if (ii == jj) {
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            text(0.5, 0.5, markerNames[ii], cex = 1.5)
+        } else if (ii < jj) {
+            par(mar = c(2.1,0.5,0.5,0.5))
+            tempdens <- density(bsb.24cor[ii,jj,])
+            plot(NA, xlim = c(-1,1), ylim = c(0,7),
+                 yaxt = "n", xlab = "", ylab = "")
+            polygon(tempdens, col = "gray70")
+            abline(v = 0)
+            abline(v = tempmean, lty = 2)
+            abline(v = bsb.theorycor[ii,jj], col = "steelblue",
+                   lty = 2)
+        } else {
+            par(mar = c(0.1,0.1,0.1,0.1))
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            rect(0, 0, 1, 1,
+                 col = pal[sum(cuts < tempmean)])
+            text(0.5, 0.5, round(tempmean, 2), cex = 2)
+        }
+    }
+}
+dev.off()
 
 ## the correlation test plot for these two data sets combined
 png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
