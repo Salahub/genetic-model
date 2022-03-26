@@ -284,11 +284,11 @@ for (ii in 1:8) {
             polygon(tempdens, col = "gray70")
             abline(v = chevCorr[ii,jj], col = "firebrick", lwd = 2)
             abline(v = chevCorrTheory[ii,jj], col = "black", lwd = 2)
-            if (chevCorr[ii,jj] <= chevCorrTheory[ii,jj]) {
+            #if (chevCorr[ii,jj] <= chevCorrTheory[ii,jj]) {
                 shadInd <- tempdens$x <= chevCorr[ii,jj]
-            } else {
-                shadInd <- tempdens$x >= chevCorr[ii,jj]
-            }
+            #} else {
+            #    shadInd <- tempdens$x >= chevCorr[ii,jj]
+            #}
             polygon(c(tempdens$x[shadInd], chevCorr[ii,jj]),
                     c(tempdens$y[shadInd], 0),
                     col = "gray50")

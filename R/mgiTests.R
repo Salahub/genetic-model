@@ -170,14 +170,14 @@ for (ii in 1:8) {
                  labels = round(seq(min(tempdens$x), max(tempdens$x),
                                     length.out = 5),2))
             polygon(tempdens, col = "gray70")
-            if (tempq < 0.5*nsim) {
+            #if (tempq <= 0.5*nsim) {
                 shadInd <- tempdens$x <= tempmean
-            } else {
-                shadInd <- tempdens$x >= tempmean
-            }
+            #} else {
+            #    shadInd <- tempdens$x >= tempmean
+            #}
             polygon(c(tempdens$x[shadInd], tempmean),
                     c(tempdens$y[shadInd], 0),
-                    col = "gray50")
+                    col = "gray60")
             abline(v = bsb.jaxcorr[ii,jj], col = "black", lwd = 1)
             abline(v = bsb.uclacorr[ii,jj], col = "black", lwd = 1)
             abline(v = mean(c(bsb.jaxcorr[ii,jj],
