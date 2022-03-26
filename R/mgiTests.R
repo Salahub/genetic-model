@@ -76,7 +76,7 @@ bsb.TabOrder <- order(as.numeric(unique(bsb.markers$chr)))
 
 
 ## PLOT BSB PANELS ###################################################
-pnlnm <- "ucla.bsb" # name of the panel
+pnlnm <- "jax.bsb" # name of the panel
 nsim <- 10000
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 
@@ -132,9 +132,9 @@ for (ii in 1:8) {
             plot(NA, xlim = c(-1,1), ylim = c(0,7),
                  yaxt = "n", xlab = "", ylab = "")
             polygon(tempdens, col = "gray70")
-            abline(v = 0)
+            abline(v = 0, lwd = 2)
             abline(v = tempmean, lty = 2)
-            abline(v = bsb.theorycor[ii,jj], col = "steelblue",
+            abline(v = bsb.theorycor[ii,jj], col = "seagreen",
                    lty = 2)
         } else {
             par(mar = c(0.1,0.1,0.1,0.1))
@@ -150,13 +150,12 @@ dev.off()
 
 ## the correlation test plot for these two data sets combined
 png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
-markerNames <- bsb.24$symbol
 par(mfrow = c(8,8), mar = c(0.1,0.1,0.1,0.1))
 for (ii in 1:8) {
     for (jj in 1:8) {
         tempmean <- mean(c(bsb.jaxcorr[ii,jj],
                            bsb.uclacorr[ii,jj]))
-        tempq <- sum(tempmean <= bsb.24cor[ii,jj,])
+        tempq <- sum(tempmean > bsb.24cor[ii,jj,])
         if (ii == jj) {
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
                  xaxt = "n", yaxt = "n", xlab = "", ylab = "")
@@ -171,7 +170,7 @@ for (ii in 1:8) {
                  labels = round(seq(min(tempdens$x), max(tempdens$x),
                                     length.out = 5),2))
             polygon(tempdens, col = "gray70")
-            if (tempq > 0.5*nsim) {
+            if (tempq < 0.5*nsim) {
                 shadInd <- tempdens$x <= tempmean
             } else {
                 shadInd <- tempdens$x >= tempmean

@@ -196,10 +196,10 @@ addChromosomes <- function(marks, ord, ...) {
               at = 1 - postns[ii]/2 - postns[ii+1]/2,
               las = 1)
     }
-    for (ii in 1:length(chrTab)) {
-        rect(postns[ii], 1 - postns[ii], postns[ii+1],
-             1 - postns[ii+1], ...)
-    }
+    #for (ii in 1:length(chrTab)) {
+    #    rect(postns[ii], 1 - postns[ii], postns[ii+1],
+    #         1 - postns[ii+1], ...)
+    #}
 }
 
 ## add a theoretical correlation calculation function
