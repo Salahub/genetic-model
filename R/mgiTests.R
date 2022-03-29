@@ -73,6 +73,7 @@ bsb.markers <- simP.filt$jax.bsb$markers[
                    simP.filt$jax.bsb$markers$symbol %in% bsb.common,]
 bsb.Order <- order(as.numeric(bsb.markers$chr))
 bsb.TabOrder <- order(as.numeric(unique(bsb.markers$chr)))
+bsb.markers <- bsb.markers[bsb.Order,]
 
 
 ## PLOT BSB PANELS ###################################################
@@ -92,13 +93,15 @@ pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 #dev.off()
 
 ## a correlation test plot of chromosomes 2 and 4 of the common markers
-bsb.24 <- bsb.markers[bsb.markers$chr %in% c("2","4"),]
+bsb.24 <- bsb.markers[bsb.markers$chr %in% c("2","4","18"),]
+ncom <- nrow(bsb.24)
 ## simulate the cross
 bsb.24sim <- simulateMGI(bsb.24,
                          ceiling(mean(c(nrow(simP.filt[["jax.bsb"]]$data),
                                         nrow(simP.filt[["ucla.bsb"]]$data)))),
+                         chrOrd = c(2,3,1),
                          reps = nsim)
-bsb.24cor <- array(0, dim = c(8, 8, nsim))
+bsb.24cor <- array(0, dim = c(ncom, ncom, nsim))
 for (ii in seq_along(bsb.24sim)) bsb.24cor[,,ii] <- bsb.24sim[[ii]]
 rm(bsb.24sim)
 ## get quantiles
@@ -107,20 +110,20 @@ bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.24$symbol, bsb.24$symbol]
 ## TO FIX: GET QUANTILES
 jaxquants <- matrix(rowSums(apply(bsb.24cor, 3,
                                   function(mat) mat <= bsb.jaxcorr)),
-                    ncol = 8)
+                    ncol = ncom)
 uclaquants <-  matrix(rowSums(apply(bsb.24cor, 3,
                                   function(mat) mat <= bsb.uclacorr)),
-                    ncol = 8)
+                    ncol = ncom)
 
 ## the scatterplot matrix with -1,1 range above the diagonal
-bsb.theorycor <- theoryCor(lapply(split(bsb.24$cMs, bsb.24$chr),
+bsb.theorycor <- theoryCor(lapply(split(bsb.24$cMs, bsb.24$chr)[c(2,3,1)],
                                   diff))
 png("bsbCorrDist.png", width = 720, height = 720, type = "cairo")
 markerNames <- bsb.24$symbol
 cuts <- seq(-1, 1, length.out = 42)
-par(mfrow = c(8,8), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:8) {
-    for (jj in 1:8) {
+par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
+for (ii in 1:ncom) {
+    for (jj in 1:ncom) {
         tempmean <- mean(bsb.24cor[ii,jj,])
         if (ii == jj) {
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
@@ -132,9 +135,9 @@ for (ii in 1:8) {
             plot(NA, xlim = c(-1,1), ylim = c(0,7),
                  yaxt = "n", xlab = "", ylab = "")
             polygon(tempdens, col = "gray70")
-            abline(v = 0, lwd = 2)
+            abline(v = 0)
             abline(v = tempmean, lty = 2)
-            abline(v = bsb.theorycor[ii,jj], col = "seagreen",
+            abline(v = bsb.theorycor[ii,jj], col = "firebrick",
                    lty = 2)
         } else {
             par(mar = c(0.1,0.1,0.1,0.1))
@@ -150,9 +153,9 @@ dev.off()
 
 ## the correlation test plot for these two data sets combined
 png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
-par(mfrow = c(8,8), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:8) {
-    for (jj in 1:8) {
+par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
+for (ii in 1:ncom) {
+    for (jj in 1:ncom) {
         tempmean <- mean(c(bsb.jaxcorr[ii,jj],
                            bsb.uclacorr[ii,jj]))
         tempq <- sum(tempmean > bsb.24cor[ii,jj,])
@@ -177,7 +180,7 @@ for (ii in 1:8) {
             #}
             polygon(c(tempdens$x[shadInd], tempmean),
                     c(tempdens$y[shadInd], 0),
-                    col = "gray60")
+                    col = "gray50")
             abline(v = bsb.jaxcorr[ii,jj], col = "black", lwd = 1)
             abline(v = bsb.uclacorr[ii,jj], col = "black", lwd = 1)
             abline(v = mean(c(bsb.jaxcorr[ii,jj],

@@ -117,9 +117,13 @@ mgiDropBadMarker <- function(panel) {
 }
 
 ## simulate a panel based on a setting and cM distances
-simulateMGI <- function(marks, npop, reps = 1000,
+simulateMGI <- function(marks, npop, chrOrd, reps = 1000,
                         setting = c("backcross", "intercross")) {
-    chroms <- split(marks$cMs, marks$chr)
+    if (missing(chrOrd)) {
+        chroms <- split(marks$cMs, marks$chr)
+    } else {
+        chroms <- split(marks$cMs, marks$chr)[chrOrd]
+    }
     setting <- match.arg(setting)
     M <- abiogenesis(length(chroms), sapply(chroms, length),
                      dists = lapply(chroms, diff), allele = 1)
