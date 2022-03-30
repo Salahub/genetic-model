@@ -77,20 +77,20 @@ bsb.markers <- bsb.markers[bsb.Order,]
 
 
 ## PLOT BSB PANELS ###################################################
-pnlnm <- "jax.bsb" # name of the panel
+pnlnm <- "ucla.bsb" # name of the panel
 nsim <- 10000
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 
 ## plot common markers
-#png(paste0(gsub("\\.", "", pnlnm), "_common.png"),
-#    width = 540, height = 540, type = "cairo")
-#corrImg(simP.corr[[pnlnm]][bsb.common[chrOrder],
-#                           bsb.common[chrOrder]],
-#        col = pal,
-#        breaks = seq(-1, 1, length.out = 42),
-#        axes = FALSE)
-#addChromosomes(bsb.markers, chrTabOrder)
-#dev.off()
+png(paste0(gsub("\\.", "", pnlnm), "_common.png"),
+    width = 540, height = 540, type = "cairo")
+corrImg(simP.corr[[pnlnm]][bsb.common[bsb.Order],
+                           bsb.common[bsb.Order]],
+        col = pal,
+        breaks = seq(-1, 1, length.out = 42),
+        axes = FALSE)
+addChromosomes(bsb.markers, bsb.TabOrder)
+dev.off()
 
 ## a correlation test plot of chromosomes 2 and 4 of the common markers
 bsb.24 <- bsb.markers[bsb.markers$chr %in% c("2","4","18"),]
