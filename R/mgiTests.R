@@ -86,7 +86,7 @@ bsb.sub <- bsb.markers[bsb.markers$chr %in% c("2","4"),]
 ncom <- nrow(bsb.sub) # number of markers
 nsim <- 10000 # number of simulated crosses
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
-bsb.subthry <- theoryCor(lapply(split(bsb.sim$cMs, bsb.sim$chr),
+bsb.subthry <- theoryCor(lapply(split(bsb.sub$cMs, bsb.sub$chr),
                                 diff))
 
 ## plot common markers
