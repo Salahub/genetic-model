@@ -263,20 +263,20 @@ dev.off()
 #mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)
 
 ## simulate the crosses individually
-jaxSim <- simulateMGI(bsb.sim, nrow(simP.filt[["jax.bsb"]]$data),
+jaxSim <- simulateMGI(bsb.sub, nrow(simP.filt[["jax.bsb"]]$data),
                       reps = nsim)
 jaxSimCor <- array(0, dim = c(ncom, ncom, nsim))
 for (ii in seq_along(jaxSim)) jaxSimCor[,,ii] <- jaxSim[[ii]]
 rm(jaxSim)
-uclaSim <- simulateMGI(bsb.sim, nrow(simP.filt[["ucla.bsb"]]$data),
+uclaSim <- simulateMGI(bsb.sub, nrow(simP.filt[["ucla.bsb"]]$data),
                        reps = nsim)
 uclaSimCor <- array(0, dim = c(ncom, ncom, nsim))
 for (ii in seq_along(uclaSim)) uclaSimCor[,,ii] <- uclaSim[[ii]]
 rm(uclaSim)
 
 ## the correlation distribution plot of these results
-png("pairedSim.png", width = 720, height = 720, type = "cairo")
-markerNames <- bsb.sim$symbol
+png("pairedSim.png", width = 1440, height = 1440, type = "cairo")
+markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
 par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
 for (ii in 1:ncom) {
@@ -291,25 +291,96 @@ for (ii in 1:ncom) {
             par(mar = c(2.1,0.5,0.5,0.5))
             tempjaxdens <- density(jaxSimCor[ii,jj,])
             tempucladens <- density(uclaSimCor[ii,jj,])
-            plot(NA, xlim = c(-1,1), ylim = c(0,7),
+            plot(NA, xlim = range(tempjaxdens$x, tempucladens$x),
+                 ylim = range(tempjaxdens$y, tempucladens$y),
+                                        #xlim = c(-1,1), ylim = c(0,7),
                  yaxt = "n", xlab = "", ylab = "")
-            abline(v = bsb.simthry[ii,jj], col = "firebrick",
-                   lty = 1)
+            #abline(v = bsb.subthry[ii,jj], col = "firebrick",
+            #       lty = 1)
             polygon(tempjaxdens, lty = 2,
-                    col = adjustcolor("gray50", alpha.f = 0.5))
+                    col = adjustcolor("#d95f02", alpha.f = 0.5))
             polygon(tempucladens, lty = 3,
-                    col = adjustcolor("gray50", alpha.f = 0.5))
-            abline(v = 0)
-            abline(v = tempjax, lty = 2)
-            abline(v = tempucla, lty = 3)
+                    col = adjustcolor("#1b9e77", alpha.f = 0.5))
+            abline(v = bsb.jaxcorr[ii,jj], col = "#d95f02", lwd = 1)
+            abline(v = bsb.uclacorr[ii,jj], col = "#1b9e77", lwd = 1)
+            abline(v = mean(c(bsb.jaxcorr[ii,jj],
+                              bsb.uclacorr[ii,jj])),
+                   col = "firebrick", lwd = 2)
+            #abline(v = 0)
+            #abline(v = tempjax, lty = 2)
+            #abline(v = tempucla, lty = 3)
         } else {
+            tempqjax <- sum(jaxSimCor[ii,jj,] < bsb.jaxcorr[ii,jj])
+            tempqucla <- sum(uclaSimCor[ii,jj,] < bsb.uclacorr[ii,jj])
             par(mar = c(0.1,0.1,0.1,0.1))
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
                  xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            rect(0, 0, 1, 1,
-                 col = pal[sum(cuts < mean(c(tempjax,tempucla)))])
-            text(0.5, 0.5, round(mean(c(tempjax, tempucla)),
-                                 2), cex = 2)
+            if (tempqjax > nsim*0.975) {
+                tempcoljax <- "firebrick"
+            } else if (tempqjax < nsim*0.025) {
+                tempcoljax <- "steelblue"
+            } else {
+                tempcoljax = NA
+            }
+            if (tempqucla > nsim*0.975) {
+                tempcolucla <- "firebrick"
+            } else if (tempqucla < nsim*0.025) {
+                tempcolucla <- "steelblue"
+            } else {
+                tempcolucla = NA
+            }
+            rect(0, 0, 1, 0.5, col = tempcoljax)
+            text(0.5, 0.25, tempqjax, cex = 2, col = "#d95f02")
+            rect(0, 0.5, 1, 1, col = tempcolucla)
+            text(0.5, 0.75, tempqucla, cex = 2, col = "#1b9e77")
+        }
+    }
+}
+dev.off()
+
+## another one: this one giving the mean distribution across sims
+png("meanSim.png", width = 1440, height = 1440, type = "cairo")
+markerNames <- bsb.sub$symbol
+cuts <- seq(-1, 1, length.out = 42)
+par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
+for (ii in 1:ncom) {
+    for (jj in 1:ncom) {
+        tempjax <- mean(jaxSimCor[ii,jj,])
+        tempucla <- mean(uclaSimCor[ii,jj,])
+        tempmean <- mean(c(bsb.jaxcorr[ii,jj], bsb.uclacorr[ii,jj]))
+        tempcomb <- 0.5*jaxSimCor[ii,jj,] + 0.5*uclaSimCor[ii,jj,]
+        if (ii == jj) {
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            text(0.5, 0.5, markerNames[ii], cex = 1.5)
+        } else if (ii < jj) {
+            par(mar = c(2.1,0.5,0.5,0.5))
+            tempdens <- density(tempcomb)
+            plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
+                 yaxt = "n", xlab = "", ylab = "")
+            polygon(tempdens, col = "gray70")
+            shadInd <- tempdens$x <= tempmean
+            polygon(c(tempdens$x[shadInd], tempmean),
+                    c(tempdens$y[shadInd], 0),
+                    col = "gray50")
+            abline(v = bsb.jaxcorr[ii,jj])
+            abline(v = bsb.uclacorr[ii,jj])
+            abline(v = tempmean, col = "firebrick", lwd = 2)
+        } else { 
+            tempq <- sum(tempcomb < mean(c(bsb.jaxcorr[ii,jj],
+                                           bsb.uclacorr[ii,jj])))
+            par(mar = c(0.1,0.1,0.1,0.1))
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            if (tempq > nsim*0.975) {
+                tempcol <- "firebrick"
+            } else if (tempq < nsim*0.025) {
+                tempcol <- "steelblue"
+            } else {
+                tempcol = NA
+            }
+            rect(0, 0, 1, 1, col = tempcol)
+            text(0.5, 0.5, tempq, cex = 2)
         }
     }
 }
