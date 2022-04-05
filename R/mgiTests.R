@@ -102,6 +102,7 @@ dev.off()
 
 ## a correlation test plot of chromosomes 2 and 4 of the common markers
 ## simulate the cross
+set.seed(30211)
 bsb.sim <- simulateMGI(bsb.sub,
                        ceiling(mean(c(nrow(simP.filt[["jax.bsb"]]$data),
                                       nrow(simP.filt[["ucla.bsb"]]$data)))),
@@ -263,19 +264,22 @@ dev.off()
 #mgiCorrs.zero <- lapply(mgiCorrs, zeroEigSuppress)
 
 ## simulate the crosses individually
+set.seed(10340504)
 jaxSim <- simulateMGI(bsb.sub, nrow(simP.filt[["jax.bsb"]]$data),
+                      #chrOrd = c(2,3,1),
                       reps = nsim)
 jaxSimCor <- array(0, dim = c(ncom, ncom, nsim))
 for (ii in seq_along(jaxSim)) jaxSimCor[,,ii] <- jaxSim[[ii]]
 rm(jaxSim)
 uclaSim <- simulateMGI(bsb.sub, nrow(simP.filt[["ucla.bsb"]]$data),
+                       #chrOrd = c(2,3,1),
                        reps = nsim)
 uclaSimCor <- array(0, dim = c(ncom, ncom, nsim))
 for (ii in seq_along(uclaSim)) uclaSimCor[,,ii] <- uclaSim[[ii]]
 rm(uclaSim)
 
 ## the correlation distribution plot of these results
-png("pairedSim.png", width = 1440, height = 1440, type = "cairo")
+png("pairedSimBig.png", width = 1440, height = 1440, type = "cairo")
 markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
 par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
