@@ -159,4 +159,3 @@ zeroEigSuppress <- function(sigma) {
     recon <- decom$vectors %*% diag(eigs) %*% t(decom$vectors)
     recon
 }
-
