@@ -74,7 +74,7 @@ bsb.markers <- simP.filt$jax.bsb$markers[
 bsb.Order <- order(as.numeric(bsb.markers$chr))
 bsb.TabOrder <- order(as.numeric(unique(bsb.markers$chr)))
 bsb.markers <- bsb.markers[bsb.Order,]
-
+ 
 ## the BSB simulations for chromosomes 2, 4, and 18
 ## set up the simulated marker set
 bsb.sub <- bsb.markers[bsb.markers$chr %in% c("2","4","18"),]
@@ -126,11 +126,16 @@ rm(uclaSim)
 weakEx <- c(1,4)
 strngEx <- c(2,3)
 ## simple hypotheticals: one, two, three, crossovers etc.
-nCross <- function(x, npop = 80) {
-    cor(cbind(c(rep(0, npop/2), rep(1, npop/2)),
-              c(rep(0, npop/2 + x), rep(1, npop/2 - x))))
+nCross <- function(x, ntwo, npop = 80) {
+    cor(cbind(c(rep(1, npop - ntwo), rep(2, ntwo)),
+              c(rep(1, npop - ntwo + x), rep(2, ntwo - x))))[1,2]
 }
-firstSeven <- sapply(0:7, function(x) nCross(x)[1,2])
+ntwoSeq <- seq(25, 55, by = 5)
+xThry <- matrix(0, 5, length(ntwoSeq))
+for (ii in 1:5) { for (jj in seq_along(ntwoSeq)) {
+                      xThry[ii, jj] <- nCross(ii - 1, ntwoSeq[jj])
+                  }
+}
 
 ## weak density and barplot
 res <- 480
@@ -160,31 +165,43 @@ tempdens$x <- c(tempdens$x[1], tempdens$x,
 plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
 polygon(tempdens, col = "gray70")
-abline(v = firstSeven, col = adjustcolor("firebrick", 0.8))
 dev.off()
 png("strngBar.png", width = res, height = res, type = "cairo")
 temptab <- table(bsb.cor[strngEx[1], strngEx[2], ])/nsim
 plot(NA, xlim = range(tempdens$x), ylim = range(temptab),
      xlab = "Correlation", ylab = "Proportion")
-abline(v = firstSeven, col = adjustcolor("firebrick", 0.8))
+pal <- hcl.colors(nrow(xThry), "Set 2")
+for (ii in seq_along(pal)) {
+    abline(v = xThry[ii,], col = adjustcolor(pal[ii], 0.7))
+}
 for (ii in seq_along(temptab)) {
     lines(rep(as.numeric(names(temptab)[ii]), 2),
           c(0, temptab[ii]))
 }
+legend(x = "topleft", legend = 0:(length(pal)-1), fill = pal,
+       title = "Count of crosses")
 dev.off()
 png("strngBarClose.png", width = res, height = res, type = "cairo")
-plot(NA, xlim = c(0.968, 0.977), ylim = c(0,0.07),
+pal <- colorRampPalette(c("steelblue", "gray50", "firebrick"))(length(ntwoSeq))
+plot(NA, xlim = c(0.968, 0.976), ylim = c(0,0.07),
      xlab = "Correlation", ylab = "Proportion")
+for (ii in seq_along(ntwoSeq)) {
+    abline(v = xThry[,ii], col = pal[ii])
+}
 for (ii in seq_along(temptab)) {
     lines(rep(as.numeric(names(temptab)[ii]), 2),
           c(0, temptab[ii]))
 }
+legend(x = "topleft", legend = round(2*ntwoSeq/80 +
+                                     (80-ntwoSeq)/80, 2),
+       fill = pal, title = "Mean genetic score")
 dev.off()
 
 
 ## corr dist (change ncom = 2 for 2x2, ncom = 8 chromosomes 2 & 4)
-ncom <- 2 # nrow(bsb.sub) # CHANGE TO CHANGE DISPLAY
-res <- 360 # 720 # better for big # 540 # better for 2x2
+ncom <- 8 # nrow(bsb.sub) # 2 # CHANGE TO CHANGE DISPLAY
+res <- 720 # better for big # 540 # better for 2x2
+pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 png("bsbCorrDist.png", width = res, height = res, type = "cairo")
 markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
@@ -492,7 +509,7 @@ for (ii in 1:ncom) {
 dev.off()
 
 ## another one: this one giving the mean distribution across sims
-png("meanSim.png", width = 1440, height = 1440, type = "cairo")
+png("meanSim.png", width = 720, height = 720, type = "cairo")
 markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
 par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
@@ -516,8 +533,8 @@ for (ii in 1:ncom) {
             polygon(c(tempdens$x[shadInd], tempmean),
                     c(tempdens$y[shadInd], 0),
                     col = "gray50")
-            abline(v = bsb.jaxcorr[ii,jj])
-            abline(v = bsb.uclacorr[ii,jj])
+            abline(v = bsb.jaxcorr[ii,jj], lty = 2)
+            abline(v = bsb.uclacorr[ii,jj], lty = 4)
             abline(v = tempmean, col = "firebrick", lwd = 2)
         } else { 
             tempq <- sum(tempcomb < mean(c(bsb.jaxcorr[ii,jj],
