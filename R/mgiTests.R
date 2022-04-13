@@ -122,9 +122,16 @@ rm(uclaSim)
 
 ## PLOTTING ##########################################################
 
+## density helper to zero for polygons
+zeroDens <- function(dens) {
+    dens$y <- c(0, dens$y, 0)
+    dens$x <- c(dens$x[1], dens$x, dens$x[length(dens$x)])
+    dens
+}
+
 ## start with the distributions for strongly/weakly associated markers
 weakEx <- c(1,4)
-strngEx <- c(2,3)
+strngEx <- c(7,8)
 ## simple hypotheticals: one, two, three, crossovers etc.
 nCross <- function(x, ntwo, npop = 80) {
     cor(cbind(c(rep(1, npop - ntwo), rep(2, ntwo)),
@@ -158,10 +165,7 @@ dev.off()
 ## strong density and barplot
 res <- 480
 png("strngDen.png", width = res, height = res, type = "cairo")
-tempdens <- density(bsb.cor[strngEx[1], strngEx[2], ])
-tempdens$y <- c(0, tempdens$y, 0)
-tempdens$x <- c(tempdens$x[1], tempdens$x,
-                tempdens$x[length(tempdens$x)])
+tempdens <- zeroDens(density(bsb.cor[strngEx[1], strngEx[2], ]))
 plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
 polygon(tempdens, col = "gray70")
@@ -197,7 +201,6 @@ legend(x = "topleft", legend = round(2*ntwoSeq/80 +
        fill = pal, title = "Mean genetic score")
 dev.off()
 
-
 ## corr dist (change ncom = 2 for 2x2, ncom = 8 chromosomes 2 & 4)
 ncom <- 8 # nrow(bsb.sub) # 2 # CHANGE TO CHANGE DISPLAY
 res <- 720 # better for big # 540 # better for 2x2
@@ -215,7 +218,7 @@ for (ii in 1:ncom) {
             text(0.5, 0.5, markerNames[ii], cex = 1.5)
         } else if (ii < jj) {
             par(mar = c(2.1,0.5,0.5,0.5))
-            tempdens <- density(bsb.cor[ii,jj,])
+            tempdens <- zeroDens(density(bsb.cor[ii,jj,]))
             plot(NA, xlim = c(-1,1), ylim = c(0,7),
                  yaxt = "n", xlab = "", ylab = "")
             polygon(tempdens, col = "gray70")
@@ -242,14 +245,14 @@ for (ii in 1:ncom) {
     for (jj in 1:ncom) {
         tempmean <- mean(c(bsb.jaxcorr[ii,jj],
                            bsb.uclacorr[ii,jj]))
-        tempq <- sum(tempmean > bsb.cor[ii,jj,])
+        tempq <- sum(tempmean >= bsb.cor[ii,jj,])
         if (ii == jj) {
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
                  xaxt = "n", yaxt = "n", xlab = "", ylab = "")
             text(0.5, 0.5, markerNames[ii], cex = 1.5)
         } else if (ii < jj) {
             par(mar = c(2.1,0.5,0.5,0.5))
-            tempdens <- density(bsb.cor[ii,jj,])
+            tempdens <- zeroDens(density(bsb.cor[ii,jj,]))
             plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
                  xaxt = "n", yaxt = "n", xlab = "", ylab = "")
             axis(1, at = seq(min(tempdens$x), max(tempdens$x),
@@ -301,93 +304,6 @@ corrImg(simP.corr[[pnlnm]][bsb.common[bsb.Order],
         breaks = seq(-1, 1, length.out = 42),
         axes = FALSE)
 addChromosomes(bsb.markers, bsb.TabOrder)
-dev.off()
-
-## the scatterplot matrix with -1,1 range above the diagonal
-png("bsbCorrDist.png", width = 720, height = 720, type = "cairo")
-markerNames <- bsb.sub$symbol
-cuts <- seq(-1, 1, length.out = 42)
-par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:ncom) {
-    for (jj in 1:ncom) {
-        tempmean <- mean(bsb.cor[ii,jj,])
-        if (ii == jj) {
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            text(0.5, 0.5, markerNames[ii], cex = 1.5)
-        } else if (ii < jj) {
-            par(mar = c(2.1,0.5,0.5,0.5))
-            tempdens <- density(bsb.cor[ii,jj,])
-            plot(NA, xlim = c(-1,1), ylim = c(0,7),
-                 yaxt = "n", xlab = "", ylab = "")
-            polygon(tempdens, col = "gray70")
-            abline(v = 0)
-            abline(v = bsb.subthry[ii,jj], col = "firebrick",
-                   lty = 1)
-            abline(v = tempmean, lty = 2)
-        } else {
-            par(mar = c(0.1,0.1,0.1,0.1))
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            rect(0, 0, 1, 1,
-                 col = pal[sum(cuts < tempmean)])
-            text(0.5, 0.5, round(tempmean, 2), cex = 2)
-        }
-    }
-}
-dev.off()
-
-## the correlation test plot for these two data sets combined
-png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
-par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:ncom) {
-    for (jj in 1:ncom) {
-        tempmean <- mean(c(bsb.jaxcorr[ii,jj],
-                           bsb.uclacorr[ii,jj]))
-        tempq <- sum(tempmean > bsb.cor[ii,jj,])
-        if (ii == jj) {
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            text(0.5, 0.5, markerNames[ii], cex = 1.5)
-        } else if (ii < jj) {
-            par(mar = c(2.1,0.5,0.5,0.5))
-            tempdens <- density(bsb.cor[ii,jj,])
-            plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            axis(1, at = seq(min(tempdens$x), max(tempdens$x),
-                             length.out = 5),
-                 labels = round(seq(min(tempdens$x), max(tempdens$x),
-                                    length.out = 5),2))
-            polygon(tempdens, col = "gray70")
-            #if (tempq <= 0.5*nsim) {
-                shadInd <- tempdens$x <= tempmean
-            #} else {
-            #    shadInd <- tempdens$x >= tempmean
-            #}
-            polygon(c(tempdens$x[shadInd], tempmean),
-                    c(tempdens$y[shadInd], 0),
-                    col = "gray50")
-            abline(v = bsb.jaxcorr[ii,jj], col = "black", lwd = 1)
-            abline(v = bsb.uclacorr[ii,jj], col = "black", lwd = 1)
-            abline(v = mean(c(bsb.jaxcorr[ii,jj],
-                              bsb.uclacorr[ii,jj])),
-                   col = "firebrick", lwd = 2)
-        } else {
-            par(mar = c(0.1,0.1,0.1,0.1))
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            if (tempq > nsim*0.975) {
-                tempcol <- "firebrick"
-            } else if (tempq < nsim*0.025) {
-                tempcol <- "steelblue"
-            } else {
-                tempcol = NA
-            }
-            rect(0, 0, 1, 1, col = tempcol)
-            text(0.5, 0.5, tempq, cex = 2)
-        }
-    }
-}
 dev.off()
 
 ## simulating panel crosses
@@ -509,7 +425,7 @@ for (ii in 1:ncom) {
 dev.off()
 
 ## another one: this one giving the mean distribution across sims
-png("meanSim.png", width = 720, height = 720, type = "cairo")
+png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
 markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
 par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
@@ -537,7 +453,7 @@ for (ii in 1:ncom) {
             abline(v = bsb.uclacorr[ii,jj], lty = 4)
             abline(v = tempmean, col = "firebrick", lwd = 2)
         } else { 
-            tempq <- sum(tempcomb < mean(c(bsb.jaxcorr[ii,jj],
+            tempq <- sum(tempcomb <= mean(c(bsb.jaxcorr[ii,jj],
                                            bsb.uclacorr[ii,jj])))
             par(mar = c(0.1,0.1,0.1,0.1))
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
