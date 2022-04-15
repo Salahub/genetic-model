@@ -159,3 +159,35 @@ zeroEigSuppress <- function(sigma) {
     recon <- decom$vectors %*% diag(eigs) %*% t(decom$vectors)
     recon
 }
+
+## compute mgi correlation and report population mean for marker pairs
+mgiCorrMeans <- function(panel, use = "pairwise.complete.obs",
+                         method = "pearson") {
+    dropLowTri <- function(mat) { # keep upper entries
+        mat[!upper.tri(mat)] <- NA
+        mat
+    }
+    srtd <- panel$data[, order(panel$markers$chr)] # group chromosomes
+    dotDrop <- apply(srtd, 2, # turn dots to NA
+                     function(mrk) {
+                         temp <- mrk
+                         temp[temp == "."] <- NA
+                         temp
+                     })
+    numer <- apply(dotDrop, 2, function(mrk) unclass(factor(mrk)))
+    splt <- lapply(split(panel$markers$symbol, panel$markers$chr),
+                   function(mrks) numer[, mrks]) # intra chromosome
+    cors <- lapply(splt, cor, use = use, method = method)
+    cors <- lapply(cors, dropLowTri)
+    means <- lapply(splt, colMeans) # means by marker
+    pwmns <- lapply(means, function(mn) outer(mn, mn, pmax)) # ref mean
+    pwmns <- lapply(pwmns, dropLowTri)
+    list(corr = cors, means = pwmns)
+}
+
+## subset a panel to specified markers
+mgiSubset <- function(panel, symbols) {
+    list(summary = panel$summary,
+         markers = panel$markers[panel$markers$symbol %in% symbols,],
+         data = panel$data[ ,symbols])
+}

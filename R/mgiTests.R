@@ -133,14 +133,16 @@ zeroDens <- function(dens) {
 weakEx <- c(1,4)
 strngEx <- c(7,8)
 ## simple hypotheticals: one, two, three, crossovers etc.
-nCross <- function(x, ntwo, npop = 80) {
-    cor(cbind(c(rep(1, npop - ntwo), rep(2, ntwo)),
-              c(rep(1, npop - ntwo + x), rep(2, ntwo - x))))[1,2]
+corCross <- function(x, ntwo, npop = 80) {
+    nonneg <- max(ntwo - x, 0)
+    refMrk <- c(rep(1, npop - ntwo), rep(2, ntwo))
+    xMrk <- c(rep(1, npop - nonneg), rep(2, nonneg))
+    suppressWarnings(cor(refMrk, xMrk))
 }
 ntwoSeq <- seq(25, 55, by = 5)
 xThry <- matrix(0, 5, length(ntwoSeq))
 for (ii in 1:5) { for (jj in seq_along(ntwoSeq)) {
-                      xThry[ii, jj] <- nCross(ii - 1, ntwoSeq[jj])
+                      xThry[ii, jj] <- corCross(ii - 1, ntwoSeq[jj])
                   }
 }
 
@@ -199,7 +201,56 @@ for (ii in seq_along(temptab)) {
 legend(x = "topleft", legend = round(2*ntwoSeq/80 +
                                      (80-ntwoSeq)/80, 2),
        fill = pal, title = "Mean genetic score")
+dev.off(
+)
+
+## plot these cross over curves directly
+nCross <- 0:50
+ntwoSeq <- seq(1, 80, by = 1)
+xThry <- matrix(0, length(nCross), length(ntwoSeq))
+for (ii in seq_along(nCross)) {
+    for (jj in seq_along(ntwoSeq)) {
+                      xThry[ii, jj] <- corCross(nCross[ii], ntwoSeq[jj])
+                  }
+}
+pal <- colorRampPalette(c("black", "firebrick"))(length(nCross))
+png("crossCurves.png", width = 540, height = 540, type = "cairo")
+plot(NA, xlim = range(c(22,ntwoSeq)),
+     ylim = range(c(xThry, 1.03), na.rm = TRUE),
+     xlab = "Mean score", ylab = "Correlation", xaxt = "n")
+axis(1, at = seq(0, 80, by = 10),
+     labels = round(1+seq(0, 80, by = 10)/80,2))
+text(x = 0, y = 1.02, "Cross overs", pos = 4)
+text(x = nCross, y = apply(xThry, 1, min, na.rm = TRUE),
+     labels = nCross)
+for (ii in seq_along(nCross)) lines(ntwoSeq, xThry[ii,], col = pal[ii])
 dev.off()
+
+## add some observed markers
+jaxCommon <- mgiSubset(simP.filt$jax.bsb, bsb.sub$symbol)
+jaxPts <- mgiCorrMeans(jaxCommon)
+xThry <- matrix(0, length(nCross), length(ntwoSeq))
+for (ii in seq_along(nCross)) {
+    for (jj in seq_along(ntwoSeq)) {
+        xThry[ii, jj] <- corCross(nCross[ii], ntwoSeq[jj],
+                                  npop = nrow(jaxCommon$data))
+                  }
+}
+png("jaxcrossCurves.png", width = 540, height = 540, type = "cairo")
+plot(NA, xlim = range(ntwoSeq),
+     ylim = range(c(xThry, 1.03), na.rm = TRUE),
+     xlab = "Mean score", ylab = "Correlation", xaxt = "n")
+axis(1, at = seq(0, 80, by = 10),
+     labels = round(1+seq(0, 80, by = 10)/80,2))
+text(x = 0, y = 1.02, "Cross overs", pos = 4)
+inds <- seq(1, length(nCross), by = 5)
+text(x = nCross[inds], y = apply(xThry, 1, min, na.rm = TRUE)[inds],
+    labels = nCross[inds])
+for (ii in seq_along(nCross)) lines(ntwoSeq, xThry[ii,], col = pal[ii])
+for (ii in 1:3) points(80*(jaxPts$means[[ii]]-1), jaxPts$corr[[ii]])
+dev.off()
+
+
 
 ## corr dist (change ncom = 2 for 2x2, ncom = 8 chromosomes 2 & 4)
 ncom <- 8 # nrow(bsb.sub) # 2 # CHANGE TO CHANGE DISPLAY
