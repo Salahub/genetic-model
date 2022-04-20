@@ -147,14 +147,20 @@ for (ii in 1:5) { for (jj in seq_along(ntwoSeq)) {
 }
 
 ## weak density and barplot
-res <- 480
-png("weakDen.png", width = res, height = res, type = "cairo")
+#res <- 480
+#png("weakDen.png", width = res, height = res, type = "cairo")
+side <- 5
+ppi <- 150
+png("weakDen.png", width = side, height = side, units = "in", res = ppi,
+    type = "cairo")
 tempdens <- density(bsb.cor[weakEx[1], weakEx[2], ])
 plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
 polygon(tempdens, col = "gray70")
 dev.off()
-png("weakBar.png", width = res, height = res, type = "cairo")
+#png("weakBar.png", width = res, height = res, type = "cairo")
+png("weakBar.png", width = side, height = side, units = "in", res = ppi,
+    type = "cairo")
 temptab <- table(bsb.cor[weakEx[1], weakEx[2], ])/nsim
 plot(NA, xlim = range(tempdens$x), ylim = range(temptab),
      xlab = "Correlation", ylab = "Proportion")
@@ -165,14 +171,18 @@ for (ii in seq_along(temptab)) {
 dev.off()
 
 ## strong density and barplot
-res <- 480
-png("strngDen.png", width = res, height = res, type = "cairo")
+#res <- 480
+#png("strngDen.png", width = res, height = res, type = "cairo")
+png("strngDen.png", width = side, height = side, units = "in", res = ppi,
+    type = "cairo")
 tempdens <- zeroDens(density(bsb.cor[strngEx[1], strngEx[2], ]))
 plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
 polygon(tempdens, col = "gray70")
 dev.off()
-png("strngBar.png", width = res, height = res, type = "cairo")
+#png("strngBar.png", width = res, height = res, type = "cairo")
+png("strngBar.png", width = side, height = side, units = "in", res = ppi,
+    type = "cairo")
 temptab <- table(bsb.cor[strngEx[1], strngEx[2], ])/nsim
 plot(NA, xlim = range(tempdens$x), ylim = range(temptab),
      xlab = "Correlation", ylab = "Proportion")
@@ -185,9 +195,11 @@ for (ii in seq_along(temptab)) {
           c(0, temptab[ii]))
 }
 legend(x = "topleft", legend = 0:(length(pal)-1), fill = pal,
-       title = "Count of crosses")
+       title = "Recombinant count")
 dev.off()
-png("strngBarClose.png", width = res, height = res, type = "cairo")
+#png("strngBarClose.png", width = res, height = res, type = "cairo")
+png("strngBarClose.png", width = side, height = side, units = "in", res = ppi,
+    type = "cairo")
 pal <- colorRampPalette(c("steelblue", "gray50", "firebrick"))(length(ntwoSeq))
 plot(NA, xlim = c(0.968, 0.976), ylim = c(0,0.07),
      xlab = "Correlation", ylab = "Proportion")
@@ -214,13 +226,15 @@ for (ii in seq_along(nCross)) {
                   }
 }
 pal <- colorRampPalette(c("black", "firebrick"))(length(nCross))
-png("crossCurves.png", width = 540, height = 540, type = "cairo")
-plot(NA, xlim = range(c(22,ntwoSeq)),
+#png("crossCurves.png", width = 540, height = 540, type = "cairo")
+png("crossCurves.png", width = side, height = side, units = "in", res = ppi,
+    type = "cairo")
+plot(NA, xlim = range(ntwoSeq),
      ylim = range(c(xThry, 1.03), na.rm = TRUE),
      xlab = "Mean score", ylab = "Correlation", xaxt = "n")
 axis(1, at = seq(0, 80, by = 10),
      labels = round(1+seq(0, 80, by = 10)/80,2))
-text(x = 0, y = 1.02, "Cross overs", pos = 4)
+text(x = 0, y = 1.02, "Recombinant offspring", pos = 4)
 text(x = nCross, y = apply(xThry, 1, min, na.rm = TRUE),
      labels = nCross)
 for (ii in seq_along(nCross)) lines(ntwoSeq, xThry[ii,], col = pal[ii])
@@ -236,13 +250,15 @@ for (ii in seq_along(nCross)) {
                                   npop = nrow(jaxCommon$data))
                   }
 }
-png("jaxcrossCurves.png", width = 540, height = 540, type = "cairo")
+#png("jaxcrossCurves.png", width = 540, height = 540, type = "cairo")
+png("jaxcrossCurves.png", width = side, height = side, units = "in", res = ppi,
+    type = "cairo")
 plot(NA, xlim = range(ntwoSeq),
      ylim = range(c(xThry, 1.03), na.rm = TRUE),
      xlab = "Mean score", ylab = "Correlation", xaxt = "n")
 axis(1, at = seq(0, 80, by = 10),
      labels = round(1+seq(0, 80, by = 10)/80,2))
-text(x = 0, y = 1.02, "Cross overs", pos = 4)
+text(x = 0, y = 1.02, "Recombinant offspring", pos = 4)
 inds <- seq(1, length(nCross), by = 5)
 text(x = nCross[inds], y = apply(xThry, 1, min, na.rm = TRUE)[inds],
     labels = nCross[inds])
@@ -253,15 +269,18 @@ dev.off()
 
 
 ## corr dist (change ncom = 2 for 2x2, ncom = 8 chromosomes 2 & 4)
-ncom <- 8 # nrow(bsb.sub) # 2 # CHANGE TO CHANGE DISPLAY
-res <- 720 # better for big # 540 # better for 2x2
+ncom <- nrow(bsb.sub) # 2 # CHANGE TO CHANGE DISPLAY
+#res <- 720 # better for big # 540 # better for 2x2
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
-png("bsbCorrDist.png", width = res, height = res, type = "cairo")
+#png("bsbCorrDist.png", width = res, height = res, type = "cairo")
+## width/height = 10 for big, 2.5 for 2x2
+png("bsbCorrDist.png", width = 10, height = 10, units = "in", res = ppi,
+    type = "cairo")
 markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
 par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:ncom) {
-    for (jj in 1:ncom) {
+for (ii in 1:ncom) { # 7:8 for 2x2
+    for (jj in 1:ncom) { # 7:8 for 2x2
         tempmean <- mean(bsb.cor[ii,jj,])
         if (ii == jj) {
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
@@ -290,9 +309,11 @@ for (ii in 1:ncom) {
 dev.off()
 
 ## the correlation test plot for these two data sets combined
-png("bsbCorrTest.png", width = res, height = res, type = "cairo")
+#png("bsbCorrTest.png", width = res, height = res, type = "cairo")
+png("bsbCorrTest.png", width = 10, height = 10, units = "in", res = ppi,
+    type = "cairo")
 par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:ncom) {
+for (ii in 1:ncom) { 
     for (jj in 1:ncom) {
         tempmean <- mean(c(bsb.jaxcorr[ii,jj],
                            bsb.uclacorr[ii,jj]))
@@ -342,6 +363,55 @@ for (ii in 1:ncom) {
 }
 dev.off()
 
+## another one: this one giving the mean distribution across sims
+#png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
+png("bsbCorrTest.png", width = 10, height = 10, units = "in", res = ppi,
+    type = "cairo")
+markerNames <- bsb.sub$symbol
+cuts <- seq(-1, 1, length.out = 42)
+par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
+for (ii in 1:ncom) {
+    for (jj in 1:ncom) {
+        tempjax <- mean(jaxSimCor[ii,jj,])
+        tempucla <- mean(uclaSimCor[ii,jj,])
+        tempmean <- mean(c(bsb.jaxcorr[ii,jj], bsb.uclacorr[ii,jj]))
+        tempcomb <- 0.5*jaxSimCor[ii,jj,] + 0.5*uclaSimCor[ii,jj,]
+        if (ii == jj) {
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            text(0.5, 0.5, markerNames[ii], cex = 1.5)
+        } else if (ii < jj) {
+            par(mar = c(2.1,0.5,0.5,0.5))
+            tempdens <- density(tempcomb)
+            plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
+                 yaxt = "n", xlab = "", ylab = "")
+            polygon(tempdens, col = "gray70")
+            shadInd <- tempdens$x <= tempmean
+            polygon(c(tempdens$x[shadInd], tempmean),
+                    c(tempdens$y[shadInd], 0),
+                    col = "gray50")
+            abline(v = bsb.jaxcorr[ii,jj], lty = 2)
+            abline(v = bsb.uclacorr[ii,jj], lty = 4)
+            abline(v = tempmean, col = "firebrick", lwd = 2)
+        } else { 
+            tempq <- sum(tempcomb <= mean(c(bsb.jaxcorr[ii,jj],
+                                           bsb.uclacorr[ii,jj])))
+            par(mar = c(0.1,0.1,0.1,0.1))
+            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
+                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+            if (tempq > nsim*0.975) {
+                tempcol <- "firebrick"
+            } else if (tempq < nsim*0.025) {
+                tempcol <- "steelblue"
+            } else {
+                tempcol = NA
+            }
+            rect(0, 0, 1, 1, col = tempcol)
+            text(0.5, 0.5, tempq, cex = 2)
+        }
+    }
+}
+dev.off()
 
 ## PLOT BSB PANELS ###################################################
 
@@ -470,54 +540,6 @@ for (ii in 1:ncom) {
             text(0.5, 0.25, tempqjax, cex = 2, col = "#d95f02")
             rect(0, 0.5, 1, 1, col = tempcolucla)
             text(0.5, 0.75, tempqucla, cex = 2, col = "#1b9e77")
-        }
-    }
-}
-dev.off()
-
-## another one: this one giving the mean distribution across sims
-png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
-markerNames <- bsb.sub$symbol
-cuts <- seq(-1, 1, length.out = 42)
-par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:ncom) {
-    for (jj in 1:ncom) {
-        tempjax <- mean(jaxSimCor[ii,jj,])
-        tempucla <- mean(uclaSimCor[ii,jj,])
-        tempmean <- mean(c(bsb.jaxcorr[ii,jj], bsb.uclacorr[ii,jj]))
-        tempcomb <- 0.5*jaxSimCor[ii,jj,] + 0.5*uclaSimCor[ii,jj,]
-        if (ii == jj) {
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            text(0.5, 0.5, markerNames[ii], cex = 1.5)
-        } else if (ii < jj) {
-            par(mar = c(2.1,0.5,0.5,0.5))
-            tempdens <- density(tempcomb)
-            plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
-                 yaxt = "n", xlab = "", ylab = "")
-            polygon(tempdens, col = "gray70")
-            shadInd <- tempdens$x <= tempmean
-            polygon(c(tempdens$x[shadInd], tempmean),
-                    c(tempdens$y[shadInd], 0),
-                    col = "gray50")
-            abline(v = bsb.jaxcorr[ii,jj], lty = 2)
-            abline(v = bsb.uclacorr[ii,jj], lty = 4)
-            abline(v = tempmean, col = "firebrick", lwd = 2)
-        } else { 
-            tempq <- sum(tempcomb <= mean(c(bsb.jaxcorr[ii,jj],
-                                           bsb.uclacorr[ii,jj])))
-            par(mar = c(0.1,0.1,0.1,0.1))
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            if (tempq > nsim*0.975) {
-                tempcol <- "firebrick"
-            } else if (tempq < nsim*0.025) {
-                tempcol <- "steelblue"
-            } else {
-                tempcol = NA
-            }
-            rect(0, 0, 1, 1, col = tempcol)
-            text(0.5, 0.5, tempq, cex = 2)
         }
     }
 }
