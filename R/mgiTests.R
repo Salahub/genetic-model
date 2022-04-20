@@ -269,12 +269,12 @@ dev.off()
 
 
 ## corr dist (change ncom = 2 for 2x2, ncom = 8 chromosomes 2 & 4)
-ncom <- nrow(bsb.sub) # 2 # CHANGE TO CHANGE DISPLAY
+ncom <- 8 # nrow(bsb.sub) # 2 # CHANGE TO CHANGE DISPLAY
 #res <- 720 # better for big # 540 # better for 2x2
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 #png("bsbCorrDist.png", width = res, height = res, type = "cairo")
 ## width/height = 10 for big, 2.5 for 2x2
-png("bsbCorrDist.png", width = 10, height = 10, units = "in", res = ppi,
+png("bsbCorrDist.png", width = 8, height = 8, units = "in", res = ppi,
     type = "cairo")
 markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
@@ -365,7 +365,7 @@ dev.off()
 
 ## another one: this one giving the mean distribution across sims
 #png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
-png("bsbCorrTest.png", width = 10, height = 10, units = "in", res = ppi,
+png("bsbCorrTest.png", width = 8, height = 8, units = "in", res = ppi,
     type = "cairo")
 markerNames <- bsb.sub$symbol
 cuts <- seq(-1, 1, length.out = 42)
