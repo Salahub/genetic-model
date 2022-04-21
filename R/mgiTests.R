@@ -181,10 +181,11 @@ plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
 polygon(tempdens, col = "gray70")
 dev.off()
 #png("strngBar.png", width = res, height = res, type = "cairo")
-png("strngBar.png", width = side, height = side, units = "in", res = ppi,
+png("strngBarLndscp.png", width = side, height = 0.8*side, units = "in", res = ppi,
     type = "cairo")
 temptab <- table(bsb.cor[strngEx[1], strngEx[2], ])/nsim
-plot(NA, xlim = range(tempdens$x), ylim = range(temptab),
+plot(NA, xlim = range(as.numeric(names(temptab)[-length(temptab)])),
+     ylim = range(temptab[-length(temptab)]),
      xlab = "Correlation", ylab = "Proportion")
 pal <- hcl.colors(nrow(xThry), "Set 2")
 for (ii in seq_along(pal)) {
@@ -194,7 +195,7 @@ for (ii in seq_along(temptab)) {
     lines(rep(as.numeric(names(temptab)[ii]), 2),
           c(0, temptab[ii]))
 }
-legend(x = "topleft", legend = 0:(length(pal)-1), fill = pal,
+legend(x = "topleft", legend = 1:(length(pal)-1), fill = pal[-length(pal)],
        title = "Recombinant count")
 dev.off()
 #png("strngBarClose.png", width = res, height = res, type = "cairo")
