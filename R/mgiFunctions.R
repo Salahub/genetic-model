@@ -22,7 +22,7 @@ readMGIrpt <- function(file) {
     raw <- scan(file, what = character(), sep = "\n")
     leg <- which(raw == "Legend:")
     lenHead <- leg + 4
-    if (length(leg) == 0) {
+    if (length(leg) == 0) { # separate legend
         leg <- which(grepl("^CHR", raw))[1]
         lenHead <- leg
     }
@@ -89,7 +89,7 @@ mgiCorrelation <- function(panel, use = "pairwise.complete.obs",
                          temp
                      })
     numer <- apply(dotDrop, 2, function(mrk) unclass(factor(mrk))-1)
-    cor(numer, use = use, method = method) # NOT pos def
+    cor(numer, use = use, method = method)
 }
 
 ## and one for the theoretical correlation
@@ -118,7 +118,8 @@ mgiDropBadMarker <- function(panel) {
 
 ## simulate a panel based on a setting and cM distances
 simulateMGI <- function(marks, npop, chrOrd, reps = 1000,
-                        setting = c("backcross", "intercross")) {
+                        setting = c("backcross", "intercross"),
+                        asArray = FALSE) {
     if (missing(chrOrd)) {
         chroms <- split(marks$cMs, marks$chr)
     } else {
