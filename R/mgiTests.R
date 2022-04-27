@@ -87,14 +87,11 @@ bsb.subthry <- theoryCor(lapply(split(bsb.sub$cMs,
 
 ## simulate the cross with 80 mice
 set.seed(30211)
-bsb.sim <- simulateMGI(bsb.sub,
+bsb.cor <- simulateMGI(bsb.sub,
                        ceiling(mean(c(nrow(simP.filt[["jax.bsb"]]$data),
                                       nrow(simP.filt[["ucla.bsb"]]$data)))),
                        chrOrd = c(2,3,1),
-                       reps = nsim) # simulated crosses
-bsb.cor <- array(0, dim = c(ncom, ncom, nsim)) # place in an array
-for (ii in seq_along(bsb.sim)) bsb.cor[,,ii] <- bsb.sim[[ii]]
-rm(bsb.sim) # remove list (save mem)
+                       reps = nsim, asArray = TRUE) # simulated crosses
 ## get quantiles
 bsb.jaxcorr <- simP.corr[["jax.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
 bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
@@ -107,38 +104,33 @@ uclaquants <-  matrix(rowSums(apply(bsb.cor, 3,
 
 ## alternatively: simulate the individual crosses to recombine later
 set.seed(10340504)
-jaxSim <- simulateMGI(bsb.sub, nrow(simP.filt[["jax.bsb"]]$data),
-                      chrOrd = c(2,3,1),
-                      reps = nsim)
-jaxSimCor <- array(0, dim = c(ncom, ncom, nsim))
-for (ii in seq_along(jaxSim)) jaxSimCor[,,ii] <- jaxSim[[ii]]
-rm(jaxSim)
-uclaSim <- simulateMGI(bsb.sub, nrow(simP.filt[["ucla.bsb"]]$data),
-                       chrOrd = c(2,3,1),
-                       reps = nsim)
-uclaSimCor <- array(0, dim = c(ncom, ncom, nsim))
-for (ii in seq_along(uclaSim)) uclaSimCor[,,ii] <- uclaSim[[ii]]
-rm(uclaSim) 
+jaxSimCor <- simulateMGI(bsb.sub, nrow(simP.filt[["jax.bsb"]]$data),
+                         chrOrd = c(2,3,1),
+                         reps = nsim, asArray = TRUE)
+uclaSimCor <- simulateMGI(bsb.sub, nrow(simP.filt[["ucla.bsb"]]$data),
+                          chrOrd = c(2,3,1),
+                          reps = nsim, asArray = TRUE)
 
 ## PLOTTING ##########################################################
 
-## density helper to zero for polygons
+## density helper to zero polygon bases
 zeroDens <- function(dens) {
     dens$y <- c(0, dens$y, 0)
     dens$x <- c(dens$x[1], dens$x, dens$x[length(dens$x)])
     dens
 }
 
+## simple recombinant hypotheticals
+corCross <- function(x, ntwo, npop = 80) {
+    nonneg <- max(ntwo - x, 0) # cannot have negative values
+    refMrk <- c(rep(1, npop - ntwo), rep(2, ntwo)) # reference
+    xMrk <- c(rep(1, npop - nonneg), rep(2, nonneg)) # swapped
+    suppressWarnings(cor(refMrk, xMrk)) # avoid NaN warnings
+}
+
 ## start with the distributions for strongly/weakly associated markers
 weakEx <- c(1,4)
 strngEx <- c(7,8)
-## simple hypotheticals: one, two, three, crossovers etc.
-corCross <- function(x, ntwo, npop = 80) {
-    nonneg <- max(ntwo - x, 0)
-    refMrk <- c(rep(1, npop - ntwo), rep(2, ntwo))
-    xMrk <- c(rep(1, npop - nonneg), rep(2, nonneg))
-    suppressWarnings(cor(refMrk, xMrk))
-}
 ntwoSeq <- seq(25, 55, by = 5)
 xThry <- matrix(0, 5, length(ntwoSeq))
 for (ii in 1:5) { for (jj in seq_along(ntwoSeq)) {
@@ -146,7 +138,7 @@ for (ii in 1:5) { for (jj in seq_along(ntwoSeq)) {
                   }
 }
 
-## weak density and barplot
+## weakly related density
 #res <- 480
 #png("weakDen.png", width = res, height = res, type = "cairo")
 side <- 5
@@ -158,6 +150,8 @@ plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
 polygon(tempdens, col = "gray70")
 dev.off()
+
+## barplot for weakly related markers
 #png("weakBar.png", width = res, height = res, type = "cairo")
 png("weakBar.png", width = side, height = side, units = "in", res = ppi,
     type = "cairo")
@@ -170,7 +164,7 @@ for (ii in seq_along(temptab)) {
 }
 dev.off()
 
-## strong density and barplot
+## strongly related density
 #res <- 480
 #png("strngDen.png", width = res, height = res, type = "cairo")
 png("strngDen.png", width = side, height = side, units = "in", res = ppi,
@@ -180,6 +174,8 @@ plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
 polygon(tempdens, col = "gray70")
 dev.off()
+
+## strongly related barplot
 #png("strngBar.png", width = res, height = res, type = "cairo")
 png("strngBarLndscp.png", width = side, height = 0.8*side, units = "in", res = ppi,
     type = "cairo")
@@ -192,12 +188,13 @@ for (ii in seq_along(pal)) {
     abline(v = xThry[ii,], col = adjustcolor(pal[ii], 0.7))
 }
 for (ii in seq_along(temptab)) {
-    lines(rep(as.numeric(names(temptab)[ii]), 2),
-          c(0, temptab[ii]))
+    lines(rep(as.numeric(names(temptab)[ii]), 2), c(0, temptab[ii]))
 }
-legend(x = "topleft", legend = 1:(length(pal)-1), fill = pal[-length(pal)],
+legend(x = "topleft", legend = 1:(length(pal)-1), fill = pal[-1],
        title = "Recombinant count")
 dev.off()
+
+## focused view on one recombinant individual
 #png("strngBarClose.png", width = res, height = res, type = "cairo")
 png("strngBarClose.png", width = side, height = side, units = "in", res = ppi,
     type = "cairo")
@@ -208,18 +205,16 @@ for (ii in seq_along(ntwoSeq)) {
     abline(v = xThry[,ii], col = pal[ii])
 }
 for (ii in seq_along(temptab)) {
-    lines(rep(as.numeric(names(temptab)[ii]), 2),
-          c(0, temptab[ii]))
+    lines(rep(as.numeric(names(temptab)[ii]), 2), c(0, temptab[ii]))
 }
-legend(x = "topleft", legend = round(2*ntwoSeq/80 +
-                                     (80-ntwoSeq)/80, 2),
+legend(x = "topleft", legend = round(2*ntwoSeq/80 + (80-ntwoSeq)/80, 2),
        fill = pal, title = "Mean genetic score")
 dev.off(
 )
 
-## plot these cross over curves directly
-nCross <- 0:50
-ntwoSeq <- seq(1, 80, by = 1)
+## plotting the recombinant curves directly
+nCross <- 0:50 # denser numbers of recombinants
+ntwoSeq <- seq(1, 80, by = 1) # denser means
 xThry <- matrix(0, length(nCross), length(ntwoSeq))
 for (ii in seq_along(nCross)) {
     for (jj in seq_along(ntwoSeq)) {
@@ -227,6 +222,8 @@ for (ii in seq_along(nCross)) {
                   }
 }
 pal <- colorRampPalette(c("black", "firebrick"))(length(nCross))
+
+## plot the above
 #png("crossCurves.png", width = 540, height = 540, type = "cairo")
 png("crossCurves.png", width = side, height = side, units = "in", res = ppi,
     type = "cairo")
@@ -251,6 +248,8 @@ for (ii in seq_along(nCross)) {
                                   npop = nrow(jaxCommon$data))
                   }
 }
+
+## all together
 #png("jaxcrossCurves.png", width = 540, height = 540, type = "cairo")
 png("jaxcrossCurves.png", width = side, height = side, units = "in", res = ppi,
     type = "cairo")
@@ -266,7 +265,6 @@ text(x = nCross[inds], y = apply(xThry, 1, min, na.rm = TRUE)[inds],
 for (ii in seq_along(nCross)) lines(ntwoSeq, xThry[ii,], col = pal[ii])
 for (ii in 1:3) points(80*(jaxPts$means[[ii]]-1), jaxPts$corr[[ii]])
 dev.off()
-
 
 
 ## corr dist (change ncom = 2 for 2x2, ncom = 8 chromosomes 2 & 4)

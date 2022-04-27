@@ -149,6 +149,11 @@ simulateMGI <- function(marks, npop, chrOrd, reps = 1000,
     } else {
         stop("Setting unknown")
     }
+    if (asArray) { # place in an appropriate array
+        tempcor <- array(0, dim = c(ncom, ncom, nsim))
+        for (ii in seq_along(allcors)) tempcor[,,ii] <- allcors[[ii]]
+        allcors <- tempcor # for output
+    }
     allcors
 }
 
