@@ -14,6 +14,13 @@ genCircApprox <- function(M, rho) {
     sort(colSums(cosines*coefs), decreasing = TRUE)
 }
 
+## exact case for equidistant markers on a single chromosome from
+## Narayan and Shastry
+exactc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
+    qseq <- (1:M)/(M + 1)*pi
+    sinh(kappa)/(cosh(kappa) - cos(qseq))
+}
+
 ## M eff functions
 MeffChev <- function(lambdas) length(lambdas) + 1 - mean(lambdas^2)
 
