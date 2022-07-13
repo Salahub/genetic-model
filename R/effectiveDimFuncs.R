@@ -16,9 +16,18 @@ genCircApprox <- function(M, rho) {
 
 ## exact case for equidistant markers on a single chromosome from
 ## Narayan and Shastry
+qseq <- function(M, kappa) { # helper to get roots
+    qFn <- function(x, nu, N = M) { # root function of N. & S.
+        (N - 1)*x + 2*atan2(sin(x), cos(x) - exp(-kappa)) - nu*pi
+    }
+    sapply(1:M, function(ii) uniroot(qFn, # search intervals
+                                     interval = c(ii-1, ii)*pi/(M+1),
+                                     nu = ii)$root)
+}
+
 exactc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
-    qseq <- (1:M)/(M + 1)*pi
-    sinh(kappa)/(cosh(kappa) - cos(qseq))
+    qs <- qseq(M, kappa = kappa) # the zeros 
+    sinh(kappa)/(cosh(kappa) - cos(qs)) # the eigenvalues
 }
 
 ## M eff functions
