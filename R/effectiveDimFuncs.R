@@ -29,14 +29,23 @@ exactc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
     sinh(kappa)/(cosh(kappa) - cos(qs)) # the eigenvalues
 }
 
-## cheeky version that uses the asymptotic limit instead of
-## solving N equations
+## version that uses the asymptotic limit and one NR iteration instead
 qseqAsym <- function(M, kappa) {
-    (1:M)/(M+1)*pi
+    xs <- (1:M)/(M+1)*pi # limit value
+    rho <- exp(-kappa)
+    adjNum <- (2*atan2(sin(xs), cos(xs) - rho) - 2*xs)
+    adjDen <- M - 1 + 2*(1 - rho*cos(xs))/(1 - 2*rho*cos(xs) + rho^2)
+    xs - adjNum/adjDen
 }
 asymc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
     qs <- qseqAsym(M, kappa = kappa) # the asymptotic zeros
     sinh(kappa)/(cosh(kappa) - cos(qs))
+}
+
+## add a function for the asmptotic density of eigenvalues
+asymc1edDensity <- function(x, M, rho = exp(-kappa), kappa = -log(rho)) {
+    (M + 1 + x)/(M*pi*x^2)*
+        sinh(kappa)/sqrt(1 - (cosh(kappa) - sinh(kappa)/x)^2)
 }
 
 ## M eff functions
