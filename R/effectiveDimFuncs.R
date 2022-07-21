@@ -24,10 +24,19 @@ qseq <- function(M, kappa) { # helper to get roots
                                      interval = c(ii-1, ii)*pi/(M+1),
                                      nu = ii)$root)
 }
-
 exactc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
-    qs <- qseq(M, kappa = kappa) # the zeros 
+    qs <- qseq(M, kappa = kappa) # the zeros
     sinh(kappa)/(cosh(kappa) - cos(qs)) # the eigenvalues
+}
+
+## cheeky version that uses the asymptotic limit instead of
+## solving N equations
+qseqAsym <- function(M, kappa) {
+    (1:M)/(M+1)*pi
+}
+asymc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
+    qs <- qseqAsym(M, kappa = kappa) # the asymptotic zeros
+    sinh(kappa)/(cosh(kappa) - cos(qs))
 }
 
 ## M eff functions

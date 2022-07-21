@@ -11,7 +11,7 @@ effDimFuncs <- list(cheverud = MeffChev, liji =  MeffLiJi,
 ## start incredibly simple: 3 equidistant markers placed along a single
 ## chromosome 20 cM apart each
 ## Theory
-c1ed <- list(nchrom = 1, nmark = 3, dists = list(c(rep(15, 2)))) # setting
+c1ed <- list(nchrom = 1, nmark = 4, dists = list(c(rep(15, 3)))) # setting
 c1edTheory <- theoryCor(c1ed$dists) # theoretical intercross corr
 c1edEig <- eigen(c1edTheory) # eigenvalues
 ## different effective tests
