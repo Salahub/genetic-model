@@ -53,7 +53,10 @@ rm(list = c("mgiMarkers", "mgiPanels.cMs", "mgiPanels.mrkr",
 mgiCorrs <- lapply(mgiFiltered, mgiCorrelation)
 ## get theoretical correlations
 mgiCorrs.th <- mapply(mgiTheory, mgiFiltered, mgiPanel.cross)
-
+## view all the distances in the data
+mgiDists <- lapply(mgiFiltered,
+                   function(pan) lapply(split(pan$markers$cMs,
+                                              pan$markers$chr), diff))
 
 ## FILTERING AND SIMULATING A SUBSET #################################
 
