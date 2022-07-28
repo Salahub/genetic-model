@@ -58,7 +58,7 @@ mgiDists <- lapply(mgiFiltered,
                    function(pan) lapply(split(pan$markers$cMs,
                                               pan$markers$chr), diff))
 ## somewhat misleading: these are not necessarily all good markers
-mgiDists <- lapply(lapply(mgiFiltered, mgiDropBadMarker),
+mgiDists <- lapply(lapply(mgiFiltered, mgiDropBadMarker, prop = 1/3),
                    function(pan) lapply(split(pan$markers$cMs,
                                               pan$markers$chr), diff))
 
