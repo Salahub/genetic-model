@@ -108,8 +108,9 @@ mgiDropZeroPanelist <- function(panel) {
 }
 
 ## drop bad markers
-mgiDropBadMarker <- function(panel) {
-    bad <- apply(panel$data, 2, function(col) any(col == "."))
+mgiDropBadMarker <- function(panel, proportion = 0) {
+    bad <- apply(panel$data, 2,
+                 function(col) sum(col == ".")/length(col) > proportion)
     goodMarkers <- names(panel$data)[!bad]
     list(summary = panel$summary,
          markers = panel$markers[panel$markers$symbol %in% goodMarkers,],
