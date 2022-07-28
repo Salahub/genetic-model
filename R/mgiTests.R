@@ -57,6 +57,10 @@ mgiCorrs.th <- mapply(mgiTheory, mgiFiltered, mgiPanel.cross)
 mgiDists <- lapply(mgiFiltered,
                    function(pan) lapply(split(pan$markers$cMs,
                                               pan$markers$chr), diff))
+## somewhat misleading: these are not necessarily all good markers
+mgiDists <- lapply(lapply(mgiFiltered, mgiDropBadMarker),
+                   function(pan) lapply(split(pan$markers$cMs,
+                                              pan$markers$chr), diff))
 
 ## FILTERING AND SIMULATING A SUBSET #################################
 
@@ -77,7 +81,7 @@ bsb.markers <- simP.filt$jax.bsb$markers[
 bsb.Order <- order(as.numeric(bsb.markers$chr))
 bsb.TabOrder <- order(as.numeric(unique(bsb.markers$chr)))
 bsb.markers <- bsb.markers[bsb.Order,]
- 
+
 ## the BSB simulations for chromosomes 2, 4, and 18
 ## set up the simulated marker set
 bsb.sub <- bsb.markers[bsb.markers$chr %in% c("2","4","18"),]
@@ -315,7 +319,7 @@ dev.off()
 png("bsbCorrTest.png", width = 10, height = 10, units = "in", res = ppi,
     type = "cairo")
 par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:ncom) { 
+for (ii in 1:ncom) {
     for (jj in 1:ncom) {
         tempmean <- mean(c(bsb.jaxcorr[ii,jj],
                            bsb.uclacorr[ii,jj]))
@@ -395,7 +399,7 @@ for (ii in 1:ncom) {
             abline(v = bsb.jaxcorr[ii,jj], lty = 2)
             abline(v = bsb.uclacorr[ii,jj], lty = 4)
             abline(v = tempmean, col = "firebrick", lwd = 2)
-        } else { 
+        } else {
             tempq <- sum(tempcomb <= mean(c(bsb.jaxcorr[ii,jj],
                                            bsb.uclacorr[ii,jj])))
             par(mar = c(0.1,0.1,0.1,0.1))
