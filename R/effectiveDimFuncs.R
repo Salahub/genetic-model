@@ -6,12 +6,38 @@ genEigenBounds <- function(M, rho) {
     rbind(upper, lower)
 }
 
-## and the circulant eigenvalue approximation
-genCircApprox <- function(M, rho) {
+## Chan's circulant eigenvalue approximation
+chanCircEig <- function(M, rho) {
     expSeq <- 0:(M-1)
     coefs <- rho^expSeq + (expSeq/M)*(rho^(M - expSeq) - rho^expSeq)
     cosines <- outer(expSeq, 0:(M-1), function(x,y) cos(2*x*y*pi/M))
     sort(colSums(cosines*coefs), decreasing = TRUE)
+}
+## Gray's circulant eigenvalues approximation
+grayCircEig <- function(M, rho) {
+    expSeq <- 0:(M-1)
+    coefs <- 1/(1 - rho^M)*(rho^expSeq + rho^(M - expSeq))
+    cosines <- outer(expSeq, 0:(M-1), function(x,y) cos(2*x*y*pi/M))
+    sort(colSums(cosines*coefs), decreasing = TRUE)
+}
+
+## Stroeker's approximation of eigenvalues
+stroekerEig <- function(M, rho) {
+    if (abs(rho) < 0.5) {
+        angles <- 1:M*pi/(M+1)
+        inv <- 1 - 2*rho*cos(angles) + rho^2 - 4/(M+1)*rho^2*sin(angles)^2
+    } else if (rho > 0) {
+        angles <- 1:(M-1)*pi/M
+        inv <- c((1 - rho)^2 + 2/M*rho*(1 - rho),
+                 1 - 2*rho*cos(angles) + rho^2 +
+                 2/M*rho*(1-rho)*(1 + cos(angles)))
+    } else {
+        angles <- 1:(M-1)*pi/M
+        inv <- c(1 - 2*rho*cos(angles) + rho^2 -
+                 2/M*rho*(1+rho)*(1 - cos(angles)),
+                 (1 + rho)^2 - 2/M*rho*(1 + rho))
+    }
+    (1 - rho^2)/inv
 }
 
 ## exact case for equidistant markers on a single chromosome from
