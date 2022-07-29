@@ -18,7 +18,9 @@ grayCircEig <- function(M, rho) {
     expSeq <- 0:(M-1)
     coefs <- 1/(1 - rho^M)*(rho^expSeq + rho^(M - expSeq))
     cosines <- outer(expSeq, 0:(M-1), function(x,y) cos(2*x*y*pi/M))
-    sort(colSums(cosines*coefs), decreasing = TRUE)
+    inter <- coefs*cosines
+    inter[1,] <- 1
+    sort(colSums(inter), decreasing = TRUE)
 }
 
 ## Stroeker's approximation of eigenvalues
