@@ -1,6 +1,6 @@
 # An implementation of a simple genetic model
 
-Several different code files are used here for the gathering of experimental data, the implementation of the model, and the simulation of correlations under the model. **modelScheme.R** is not exceptionally relevant, it simply an image that summarizes the model.
+Several different code files are used here for the gathering of experimental data, the implementation of the model, and the simulation of correlations under the model. **modelScheme.R** is not exceptionally relevant, it's simply an image that summarizes the model.
 
 The files **mgiFunctions.R** and **mgiTests.R** are used to extract, process, and display data from the MGI database at http://www.informatics.jax.org/. This is only used tangentially in the work, but could be relied upon more heavily for testing and verification in the future.
 
