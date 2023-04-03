@@ -1,11 +1,3 @@
-## simple plotting of effective dimension
-genEigenBounds <- function(M, rho) {
-    lower <- (1 - rho^2)/(1 - 2*rho*cos((1:M)*pi/(M+1)) + rho^2)
-    upper <- (1 - rho^2)/(1 - 2*rho*cos((1:M - 1)*pi/(M+1)) + rho^2)
-    if (rho == 1) upper[1] <- lower[1] <- M
-    rbind(upper, lower)
-}
-
 ## Chan's circulant eigenvalue approximation
 chanCircEig <- function(M, rho) {
     expSeq <- 0:(M-1)
@@ -50,7 +42,8 @@ qseq <- function(M, kappa) { # helper to get roots
     }
     sapply(1:M, function(ii) uniroot(qFn, # search intervals
                                      interval = c(ii-1, ii)*pi/(M+1),
-                                     nu = ii)$root)
+                                     nu = ii,
+                                     tol = .Machine$double.eps^0.75)$root)
 }
 exactc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
     qs <- qseq(M, kappa = kappa) # the zeros
@@ -61,7 +54,7 @@ exactc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
 qseqAsym <- function(M, kappa) {
     xs <- (1:M)/(M+1)*pi # limit value
     rho <- exp(-kappa)
-    adjNum <- (2*atan2(sin(xs), cos(xs) - rho) - 2*xs)
+    adjNum <- 2*atan2(sin(xs), cos(xs) - rho) - 2*xs
     adjDen <- M - 1 + 2*(1 - rho*cos(xs))/(1 - 2*rho*cos(xs) + rho^2)
     xs - adjNum/adjDen
 }
@@ -72,7 +65,7 @@ asymc1edEig <- function(M, rho = exp(-kappa), kappa = -log(rho)) {
 
 ## add a function for the asmptotic density of eigenvalues
 asymc1edDensity <- function(x, M, rho = exp(-kappa), kappa = -log(rho)) {
-    (M + 1 + x)/(M*pi*x^2)*
+    (M + x)/(M*pi*x^2)*
         sinh(kappa)/sqrt(1 - (cosh(kappa) - sinh(kappa)/x)^2)
 }
 
@@ -89,12 +82,25 @@ MeffGalwey <- function(lambdas) {
     (MeffED(lambdas, 0.5))^2/MeffED(lambdas, p = 1)
 }
 
+MeffGaoEtAl <- function(lambdas, cutoff = 0.995) {
+    sum(cumsum(lambdas/sum(lambdas)) <= cutoff)
+}
+
 MeffFuns <- list(cheverud = MeffChev,
                  liji = MeffLiJi,
                  ed = MeffED,
-                 galwey = MeffGalwey)
+                 galwey = MeffGalwey,
+                 gao = MeffGaoEtAl)
 
-## first inspect these bounds
+## simple plotting of effective dimension
+genEigenBounds <- function(M, rho) {
+    lower <- (1 - rho^2)/(1 - 2*rho*cos((1:M)*pi/(M+1)) + rho^2)
+    upper <- (1 - rho^2)/(1 - 2*rho*cos((1:M - 1)*pi/(M+1)) + rho^2)
+    if (rho == 1) upper[1] <- lower[1] <- M
+    rbind(upper, lower)
+}
+
+## inspect these bounds
 plotBounds <- function(bnds, colSeq, alpha = 0.5, ylim, ...) {
     neig <- ncol(bnds[[1]])
     xs <- 1:neig

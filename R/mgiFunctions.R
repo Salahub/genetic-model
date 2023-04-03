@@ -1,6 +1,6 @@
-source("simulationFunctions.R")
+#source("simulationFunctions.R")
 
-mgiUrl <- "http://www.informatics.jax.org/downloads/reports/"
+mgiUrl <- "https://www.informatics.jax.org/downloads/reports/"
 mgiPNames <- c(cope.jenk = "MGI_Copeland-Jenkins_Panel.rpt",
                eucib.bsb = "MGI_EUCIB_BSB_Panel.rpt",
                eucib.bss = "MGI_EUCIB_BSS_Panel.rpt",
