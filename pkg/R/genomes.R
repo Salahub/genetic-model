@@ -2,18 +2,22 @@
 library(grid)
 
 ##' @title Simple encoding functions
-##' @param annotation character vector giving allelic annotations
+##' @param annotation character vector giving observed annotations
 ##' @param alleles character vector of possible annotations
+##' @param values numeric vector of the same length as alleles giving
+##' the value of each allele when encoded
 ##' @return numeric vector of encodings
 ##' @author Chris Salahub
-encodeDom <- function(annotation, alleles) {
-    
+encode <- function(annotation, alleles, values = c(1, 0)) {
+    values[match(annotation, alleles)]
 }
 
 ##' @title Convert a data.frame to a genome object
 ##' @param df data.frame with columns "mv", "pv", "chr", and "pos"
 ##' @param alleles list with the same length as df that gives the
 ##' potential alleles for each row
+##' @param values list of identical form to alleles giving numeric
+##' values for the encoding of each possible allele
 ##' @param missing string values to be interpreted as missing values
 ##' @param encoder function which accepts an annotation and its
 ##' possible values and returns an encoding
@@ -21,7 +25,7 @@ encodeDom <- function(annotation, alleles) {
 ##' pos across chromosomes given by chr with encodings given by the
 ##' values in mv and pv
 ##' @author Chris Salahub
-asGenome <- function(df, alleles, missing = c(".", "-"),
+asGenome <- function(df, alleles, values, missing = c(".", "-"),
                      encoder = encode) {
     ## safety check
     stopifnot(all(c("mv", "pv", "chr", "pos") %in% names(df)))
@@ -30,7 +34,22 @@ asGenome <- function(df, alleles, missing = c(".", "-"),
     df$pv[df$pv %in% missing] <- NA
     ## missing alleles
     if (missing(alleles)) {
-        warning("alleles not provided, assuming biallelic by case")
+        warning("alleles not provided, assuming upper/lower case")
+        alleles <- lapply(df$mv,
+                          function(an) {
+                              c(toupper(an), tolower(an))
+                          })
+    }
+    ## create encoding
+    enc <- lapply(1:nrow(df),
+                  function(ii) encoder(df[ii, c("mv", "pv")],
+                                       alleles[[ii]], values[[ii]]))
+    ## collect into genome object
+    genome <- list(encoding = enc, chromosome = df$chr,
+                   alleles = alleles,
+                   distances = lapply(split(df$pos, df$chr), diff))
+    class(genome) <- "genome"
+    genome
 }
 
 ##' @title Simulate a genome object
@@ -62,86 +81,9 @@ makeGenome <- function(nmark, alleles, markerFuns = markerHybrid,
     distances <- generateDistances(nmark, distFuns)
     ## collect into genome object
     genome <- list(encoding = encoding, chromosome = chr,
-                   alleles = alleles)
+                   alleles = alleles, distances = distances)
     class(genome) <- "genome"
     genome
-}
-
-##' @title Computing recombination probability from map distances
-##' @param d numeric vector of additive map distances, for Kosambi and
-##' Haldane's map functions in centiMorgans or their equivalent
-##' @return numeric vector of recombination probabilities based on the
-##' corresponding map distance units
-##' @author Chris Salahub
-mapHaldane <- function(d) {
-    1 - exp(-d/50))/2
-}
-invHaldane <- function(pr) {
-    -50*log(1 - 2*pr)
-}
-mapKosambi <- function(d) {
-    tanh(d/50)/2 # (exp(d/25) - 1)/(2*(exp(d/25) + 1))
-}
-invKosambi <- function(pr) {
-    atanh(2*pr)*50 # 25*log((1 + 2*pr)/(1 - 2*pr))
-}
-#mapRenewal <- function(d, density = function(x) dchisq(x, df = 4)/4,
-#                       ...) {
-#    c0 <- integrate(function(y) integrate(density, y, Inf), d, Inf)
-#    (1 - c0)/2
-#}
-
-## write a function to drift a given genome (meiosis event)
-meiose <- function(genome, probs = NULL, map = mapHaldane) {
-    alleles <- genome$alleles
-    dists <- genome$dists
-    ## write a helper to drift a single chromosome
-    chromDrift <- function(copies, probs) {
-        copy1 <- copies[,1]
-        copy2 <- copies[,2]
-        breaks <- runif(length(probs))
-        crossovers <- which(breaks < probs)
-        for (ii in seq_along(crossovers)) {
-            crossPos <- crossovers[ii]
-            inter <- copy2[1:crossPos]
-            copy2[1:crossPos] <- copy1[1:crossPos]
-            copy1[1:crossPos] <- inter
-        }
-        cbind(copy1, copy2)
-    }
-    ## get probabilities
-    if (is.null(probs)) probs <- lapply(dists, map)
-    ## take the above and apply it across the genome
-    drifted <- Map(chromDrift, alleles, probs)
-    newGenome <- list(alleles = drifted, dists = dists)
-    class(newGenome) <- "genome"
-    newGenome
-}
-
-## now a function that crosses two given genomes (sex)
-sex <- function(genome1, genome2, map = mapHaldane) {
-    ## perform a distance check
-    if (!identical(genome1$dists, genome2$dists)) {
-        stop("Allele distances don't match")
-    }
-    ## meiose alleles
-    genome1 <- meiose(genome1, map = map)
-    genome2 <- meiose(genome2, map = map)
-    ## get alleles
-    alleles1 <- genome1$alleles
-    alleles2 <- genome2$alleles
-    ## pick from the copies for each genome
-    chosenCopies <- replicate(length(alleles1),
-                              sample(c(1,2), size = 2, replace = TRUE),
-                              simplify = FALSE)
-    ## select and reassort
-    offspring <- Map(function(g1, g2, cps) cbind(g1[,cps[1]],
-                                                 g2[,cps[2]]),
-                     alleles1, alleles2, chosenCopies)
-    ## return the offspring
-    offspring <- list(alleles = offspring, dists = genome1$dists)
-    class(offspring) <- "genome"
-    offspring
 }
 
 ##' a "scoring" function, consider the possible variants
