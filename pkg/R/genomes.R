@@ -1,5 +1,4 @@
 ## MAIN FUNCTIONS ####################################################
-library(grid)
 
 ##' @title Simple encoding functions
 ##' @param annotation character vector giving observed annotations
@@ -8,7 +7,7 @@ library(grid)
 ##' the value of each allele when encoded
 ##' @return numeric vector of encodings
 ##' @author Chris Salahub
-encode <- function(annotation, alleles, values = c(1, 0)) {
+encode <- function(annotation, alleles, values) {
     values[match(annotation, alleles)]
 }
 
@@ -25,8 +24,8 @@ encode <- function(annotation, alleles, values = c(1, 0)) {
 ##' pos across chromosomes given by chr with encodings given by the
 ##' values in mv and pv
 ##' @author Chris Salahub
-asGenome <- function(df, alleles, values, missing = c(".", "-"),
-                     encoder = encode) {
+asGenome <- function(df, alleles, values = c(1,0),
+                     missing = c(".", "-"), encoder = encode) {
     ## safety check
     stopifnot(all(c("mv", "pv", "chr", "pos") %in% names(df)))
     ## replace missing values
@@ -86,102 +85,34 @@ makeGenome <- function(nmark, alleles, markerFuns = markerHybrid,
     genome
 }
 
-##' a "scoring" function, consider the possible variants
-##' - additive: the count of A's at each site
-##' - dominant: whether the gene is heterozygous or homozygous
-##' TODO: read this better... still unclear
-scoreGenome <- function(genome, score = "additive") {
-    scoreFun <- switch(score,
-                       additive = `+`,
-                       dominant = `==`,
-                       stop(paste(score, "not implemented")))
-    lapply(genome$alleles,
-           function(chrom) scoreFun(chrom[,1], chrom[,2]))
-}
-
-## write a simple plot function
-plot.genome <- function(genome) {
-    xpos <- ppoints(length(genome$alleles))
-    delta <- if (length(xpos) == 1) 0.1 else diff(xpos)[1]/5
-    yscales <- lapply(genome$dists, function(el) c(0, cumsum(el)))
-    yabs <- max(unlist(yscales))
-    ypos <- lapply(yscales,
-                   function(el) 0.95 - (el/yabs)*0.9)
-    grid.newpage()
-    for (ii in seq_along(genome$alleles)) {
-        chrom <- genome$alleles[[ii]]
-        grid.text(chrom,
-                  x = xpos[ii] + rep(c(-1,1)*delta, each = nrow(chrom)),
-                  y = rep(ypos[[ii]], times = 2),
-                  gp = gpar(col = c("steelblue", "firebrick")[chrom+1]))
+##' @title Checking if an object is a valid genome
+##' @param genome object to be checked
+##' @return TRUE if the object is a genome, otherwise text outlining
+##' what failed
+##' @author Chris Salahub
+checkGenome <- function(genome) {
+    isgen <- TRUE # change if false
+    ## check names of elements
+    if (sort(names(genome)) != c("alleles", "chromosome", "distances",
+                                 "encoding")) {
+        isgen <- FALSE
+        cat("Slots namely incorrectly or missing\n")
+    } else if (!is.list(genome$alleles) | # check types of elements
+               !is.vector(genome$chromosome) |
+               !is.list(genome$distances) |
+               !is.matrix(genome$encoding)) {
+        isgen <- FALSE
+        cat("Slots contain data of the incorrect type\n")
+    } else if (length(genome$alleles) != nrow(genome$encoding)) {
+        isgen <- FALSE
+        cat("Number of alleles does not match encoding\n")
+    } else if (!identical(table(genome$chromosome),
+                          sapply(genome$distances, length) + 1)) {
+        isgen <- FALSE
+        cat("Number of distances does not match number of markers\n")
+    } else if (length(genome$alleles) != length(genome$chromosome)) {
+        isgen <- FALSE
+        cat("Distances and alleles imply differing counts of markers")
     }
-}
-
-## calculate correlation for a series of genome scores
-popCorrelation <- function(population, scoring = scoreGenome) {
-    ## check if genomes or scores have been provided
-    if (all(sapply(population, class) == "genome")) { # score genomes
-        population <- lapply(population, scoring)
-    }
-    ## unlist the scores, generate correlation matrix
-    fullScore <- t(sapply(population, unlist))
-    cor(fullScore)
-}
-
-## write a small wrapper for the image function to place the diagonal
-corrImg <- function(corrs, ...) {
-    newcorr <- t(apply(corrs, 1, rev))
-    image(newcorr, ...)
-}
-
-## add chromosome boundaries to the plot
-addChromosomes <- function(marks, ord, ...) {
-    wid <- 1/(nrow(marks)-1)
-    chrTab <- table(marks$chr)[ord]*wid
-    postns <- cumsum(c(-wid/2, chrTab))
-    for (ii in 1:length(chrTab)) {
-        abline(v = c(postns[ii], postns[ii+1]),
-               h = c(1 - postns[ii], 1 - postns[ii+1]),
-               col = "gray70")
-        mtext(names(chrTab)[ii], side = 3,
-              at = postns[ii]/2 + postns[ii+1]/2)
-        mtext(names(chrTab)[ii], side = 2,
-              at = 1 - postns[ii]/2 - postns[ii+1]/2,
-              las = 1)
-    }
-    #for (ii in 1:length(chrTab)) {
-    #    rect(postns[ii], 1 - postns[ii], postns[ii+1],
-    #         1 - postns[ii+1], ...)
-    #}
-}
-
-## add a theoretical correlation calculation function
-theoryCorrelation <- function(d, map = mapHaldane,
-                              setting = "intercross") {
-    gamma <- switch(setting, # setting coefficient
-                    intercross = 1,
-                    backcross = 1,
-                    halfback = 1/sqrt(2),
-                    0)
-    gamma*(1 - 2*map(d))
-}
-
-## apply it to generate theoretical correlation matrices
-theoryCor <- function(dists, map = mapHaldane,
-                      setting = "intercross") {
-    inds <- c(0, cumsum(sapply(dists,
-                               function(el) length(el) + 1)))
-    pos <- lapply(dists, function(el) c(0, cumsum(el)))
-    M <- inds[length(dists)+1]
-    mat <- matrix(0, nrow = M, ncol = M)
-    for (ii in 1:(length(inds)-1)) {
-        mat[(inds[ii]+1):inds[ii+1],
-            (inds[ii]+1):inds[ii+1]] <-
-               theoryCorrelation(abs(outer(pos[[ii]],
-                                           pos[[ii]],
-                                           FUN = `-`)),
-                                 map,
-                                 setting)
-    }
-    mat
+    isgen        
 }

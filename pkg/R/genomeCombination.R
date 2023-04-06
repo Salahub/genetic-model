@@ -24,14 +24,14 @@ invKosambi <- function(pr) {
 #    (1 - c0)/2
 #}
 
-##' @title Simulating meiosis
+##' @title Simulating meiosis under non-interference
 ##' @param genome a genome object which will be meiosed
 ##' @param probs (optional) custom probabilities of recombination
 ##' which override distance calculations
 ##' @param map function which accepts distances stored in the genome
 ##' object and returns probabilities of recombination
-##' @return a new genome object with certain rows of the encoding
-##' recombined
+##' @return a list of encodings split by chromosome with certain rows
+##' of the encoding recombined
 ##' @author Chris Salahub
 meiose <- function(genome, probs = NULL, map = mapHaldane) {
     encodings <- split(genome$alleles, genome$chromosome)
@@ -53,37 +53,40 @@ meiose <- function(genome, probs = NULL, map = mapHaldane) {
     ## get probabilities
     if (is.null(probs)) probs <- lapply(dists, map)
     ## take the above and apply it across the genome
-    drifted <- Map(chromDrift, alleles, probs)
-    newGenome <- list(encoding = do.call(rbind, drifted),
-                      distances = genome$distances,
-                      alleles = alleles,
-                      chromosome = genome$chromosome)
-    class(newGenome) <- "genome"
-    newGenome
+    drifted <- Map(chromDrift, encodings, probs)
+    drifted
 }
 
-## now a function that crosses two given genomes (sex)
+##' @title Crossing two genomes
+##' @param genome1 a genome object
+##' @param genome2 a genome object with markers observed at the same
+##' locations as on genome 1
+##' @param map function to convert map distances to probabilities
+##' @return a genome object with the same marker locations as genome1
+##' and genome2 with its encodings recombined
+##' @author Chris Salahub
 sex <- function(genome1, genome2, map = mapHaldane) {
     ## perform a distance check
-    if (!identical(genome1$dists, genome2$dists)) {
+    if (!identical(genome1$distances, genome2$distances) |
+        !identical(genome1$chromosome, genome2$chromosome)) {
         stop("Markers don't match")
     }
     ## meiose alleles
-    genome1 <- meiose(genome1, map = map)
-    genome2 <- meiose(genome2, map = map)
-    ## get alleles
-    alleles1 <- genome1$alleles
-    alleles2 <- genome2$alleles
+    gamete1 <- meiose(genome1, map = map)
+    gamete2 <- meiose(genome2, map = map)
     ## pick from the copies for each genome
-    chosenCopies <- replicate(length(alleles1),
+    chosenCopies <- replicate(length(gamete1),
                               sample(c(1,2), size = 2, replace = TRUE),
                               simplify = FALSE)
     ## select and reassort
-    offspring <- Map(function(g1, g2, cps) cbind(g1[,cps[1]],
-                                                 g2[,cps[2]]),
-                     alleles1, alleles2, chosenCopies)
+    offspringEnc <- Map(function(g1, g2, cps) cbind(g1[,cps[1]],
+                                                    g2[,cps[2]]),
+                        gamete1, gamete2, chosenCopies)
     ## return the offspring
-    offspring <- list(alleles = offspring, dists = genome1$dists)
+    offspring <- list(encoding = do.call(rbind, offspringEnc),
+                      alleles = genome1$alleles,
+                      chromosome = genome1$chromosome,
+                      distances = genome1$distances)
     class(offspring) <- "genome"
     offspring
 }
