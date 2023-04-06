@@ -1,3 +1,5 @@
+### Functions to Combine and Cross Genome Objects ####################
+
 ##' @title Computing recombination probability from map distances
 ##' @param d numeric vector of additive map distances, for Kosambi and
 ##' Haldane's map functions in centiMorgans or their equivalent
@@ -22,10 +24,18 @@ invKosambi <- function(pr) {
 #    (1 - c0)/2
 #}
 
-## write a function to drift a given genome (meiosis event)
+##' @title Simulating meiosis
+##' @param genome a genome object which will be meiosed
+##' @param probs (optional) custom probabilities of recombination
+##' which override distance calculations
+##' @param map function which accepts distances stored in the genome
+##' object and returns probabilities of recombination
+##' @return a new genome object with certain rows of the encoding
+##' recombined
+##' @author Chris Salahub
 meiose <- function(genome, probs = NULL, map = mapHaldane) {
-    alleles <- genome$alleles
-    dists <- genome$dists
+    encodings <- split(genome$alleles, genome$chromosome)
+    dists <- genome$distances
     ## write a helper to drift a single chromosome
     chromDrift <- function(copies, probs) {
         copy1 <- copies[,1]
@@ -44,7 +54,10 @@ meiose <- function(genome, probs = NULL, map = mapHaldane) {
     if (is.null(probs)) probs <- lapply(dists, map)
     ## take the above and apply it across the genome
     drifted <- Map(chromDrift, alleles, probs)
-    newGenome <- list(alleles = drifted, dists = dists)
+    newGenome <- list(encoding = do.call(rbind, drifted),
+                      distances = genome$distances,
+                      alleles = alleles,
+                      chromosome = genome$chromosome)
     class(newGenome) <- "genome"
     newGenome
 }
@@ -53,7 +66,7 @@ meiose <- function(genome, probs = NULL, map = mapHaldane) {
 sex <- function(genome1, genome2, map = mapHaldane) {
     ## perform a distance check
     if (!identical(genome1$dists, genome2$dists)) {
-        stop("Allele distances don't match")
+        stop("Markers don't match")
     }
     ## meiose alleles
     genome1 <- meiose(genome1, map = map)
