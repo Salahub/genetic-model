@@ -1,5 +1,6 @@
+##' @title MGD URL constants
 mgiUrl <- "https://www.informatics.jax.org/downloads/reports/"
-mgiPNames <- c(cope.jenk = "MGI_Copeland-Jenkins_Panel.rpt",
+mgiPanels <- c(cope.jenk = "MGI_Copeland-Jenkins_Panel.rpt",
                eucib.bsb = "MGI_EUCIB_BSB_Panel.rpt",
                eucib.bss = "MGI_EUCIB_BSS_Panel.rpt",
                jax.bsb = "MGI_JAX_BSB_Panel.rpt",
@@ -13,9 +14,13 @@ mgiPNames <- c(cope.jenk = "MGI_Copeland-Jenkins_Panel.rpt",
                reev.c16 = "MGI_Reeves_Chr_16_Panel.rpt",
                seldin = "MGI_Seldin_Panel.rpt",
                ucla.bsb = "MGI_UCLA_BSB_Panel.rpt")
-mgiMNames <- c("MRK_List1.rpt", "MRK_List2.rpt")
+mgiMarkers <- c("MRK_List1.rpt", "MRK_List2.rpt")
 
-## read in MGI data (http://www.informatics.jax.org/)
+##' @title Read MGI data from http://www.informatics.jax.org/ into R
+##' @param file string giving the URL for an MGI panel
+##' @return a list containing a description of the panel, the marker
+##' descriptions, and the marker measurements
+##' @author Chris Salahub
 readMGIrpt <- function(file) {
     raw <- scan(file, what = character(), sep = "\n")
     leg <- which(raw == "Legend:")
@@ -46,7 +51,11 @@ readMGIrpt <- function(file) {
          data = as.data.frame(data)) # return everything
 }
 
-## process the MGI reference material
+##' @title Read MGI marker reference data
+##' @param fileList list of strings giving the URLs of the MGI marker
+##' descriptions
+##' @return a data frame giving marker information across all files
+##' @author Chris Salahub
 readMGIlists <- function(fileList = paste0(mgiUrl, mgiMNames)) {
     lists <- lapply(fileList, scan, what = character(), sep = "\n")
     lists <- lapply(lists, gsub, pattern = "\t$", replacement= "\t.")

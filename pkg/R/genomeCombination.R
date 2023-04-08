@@ -18,11 +18,6 @@ mapKosambi <- function(d) {
 invKosambi <- function(pr) {
     atanh(2*pr)*50 # 25*log((1 + 2*pr)/(1 - 2*pr))
 }
-#mapRenewal <- function(d, density = function(x) dchisq(x, df = 4)/4,
-#                       ...) {
-#    c0 <- integrate(function(y) integrate(density, y, Inf), d, Inf)
-#    (1 - c0)/2
-#}
 
 ##' @title Simulating meiosis under non-interference
 ##' @param genome a genome object which will be meiosed
@@ -65,15 +60,16 @@ meiose <- function(genome, probs = NULL, map = mapHaldane) {
 ##' @return a genome object with the same marker locations as genome1
 ##' and genome2 with its encodings recombined
 ##' @author Chris Salahub
-sex <- function(genome1, genome2, map = mapHaldane) {
+sex <- function(genome1, genome2, probs1 = NULL, probs2 = NULL,
+                map = mapHaldane) {
     ## perform a distance check
     if (!identical(genome1$distances, genome2$distances) |
         !identical(genome1$chromosome, genome2$chromosome)) {
         stop("Markers don't match")
     }
     ## meiose alleles
-    gamete1 <- meiose(genome1, map = map)
-    gamete2 <- meiose(genome2, map = map)
+    gamete1 <- meiose(genome1, probs1, map = map)
+    gamete2 <- meiose(genome2, probs2, map = map)
     ## pick from the copies for each genome
     chosenCopies <- replicate(length(gamete1),
                               sample(c(1,2), size = 2, replace = TRUE),
