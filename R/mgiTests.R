@@ -1,5 +1,5 @@
 ## load functions, set image output directory
-source("simulationFunctions.R")
+library(simpleGenome)
 source("mgiFunctions.R")
 imgDir <- "../img/"
 dataDir <- "../data/"
@@ -41,6 +41,16 @@ mgiPanel.cross <- c("backcross", "backcross", "backcross",
                     "backcross", "intercross", "unclear",
                     "backcross", "backcross")
 names(mgiPanel.cross) <- names(mgiFiltered)
+
+##' convert to genome objects
+mgiSelect <- names(mgiFiltered)[which(mgiPanel.cross == "backcross")]
+mgiGenomes <- vector(mode = "list", length = length(mgiSelect))
+names(mgiGenomes) <- mgiSelect # set names
+for (nm in mgiSelect) {
+    cat("\r - Panel : ", nm)
+    mgiGenomes[nm] <- list(mgiToGenome(mgiFiltered[[nm]],
+                                       mgiPanel.cross[nm]))
+}
 
 ## remove unnecessary data
 rm(list = c("mgiMarkers", "mgiPanels.cMs", "mgiPanels.mrkr",

@@ -1,9 +1,36 @@
 ### Functions to Compute Correlation for a Population of Genomes #####
 
+##' @title Create a population object
+##' @param genomes list of genomes measured at the same locations
+##' @return a population object with the same slots as a genome object
+##' but where encoding is a list of encodings for all entries
+##' @author Chris Salahub
+asPopulation <- function(genomes) {
+    ## perform structural check that all measure the same spots
+    consistent <- lapply(genomes[2:length(genomes)],
+                         function(g) {
+                             identical(genomes[[1]]$location,
+                                       g$location) &
+                                 identical(genomes[[1]]$alleles,
+                                           g$alleles)
+                             }
+    if (!all(consistent)) {
+        stop("Not all genomes measure at the same locations")
+    }
+    ## extract encodings
+    encodings <- lapply(genomes, function(g) g$encoding)
+    ## make object
+    pop <- list(encodings = encodings, chromosome = genomes[[1]]$chr,
+                alleles = genomes[[1]]$alleles,
+                location = genomes[[1]]$location)
+    class(pop) <- "population"
+    pop
+}
+
 ##' @title Functions for scoring genomes
 ##' @param genome genome object to have its encoding summarized into
 ##' a vector of scores
-##' @return numeric vector of scores 
+##' @return numeric vector of scores
 ##' @author Chris Salahub
 scoreAdditive <- function(genome) {
     genome$encoding[,1] + genome$encoding[,2]
@@ -42,7 +69,7 @@ theoryCorrelation <- function(genome, map = mapHaldane,
                     backcross = 1,
                     halfback = 1/sqrt(2),
                     0)
-    dists <- genome$distances # only distances are used
+    dists <- diff(genome$location) # only distances are used
     chrinds <- c(0, cumsum(table(genome$chromosome)))
     pos <- lapply(dists, function(el) c(0, cumsum(el)))
     M <- chrinds[length(dists)+1] # dimension of matrix

@@ -30,7 +30,7 @@ invKosambi <- function(pr) {
 ##' @author Chris Salahub
 meiose <- function(genome, probs = NULL, map = mapHaldane) {
     encodings <- split(genome$alleles, genome$chromosome)
-    dists <- genome$distances
+    dists <- diff(genome$location)
     ## write a helper to drift a single chromosome
     chromDrift <- function(copies, probs) {
         copy1 <- copies[,1]
@@ -63,7 +63,7 @@ meiose <- function(genome, probs = NULL, map = mapHaldane) {
 sex <- function(genome1, genome2, probs1 = NULL, probs2 = NULL,
                 map = mapHaldane) {
     ## perform a distance check
-    if (!identical(genome1$distances, genome2$distances) |
+    if (!identical(genome1$location, genome2$location) |
         !identical(genome1$chromosome, genome2$chromosome)) {
         stop("Markers don't match")
     }
@@ -82,7 +82,7 @@ sex <- function(genome1, genome2, probs1 = NULL, probs2 = NULL,
     offspring <- list(encoding = do.call(rbind, offspringEnc),
                       alleles = genome1$alleles,
                       chromosome = genome1$chromosome,
-                      distances = genome1$distances)
+                      location = genome1$locations)
     class(offspring) <- "genome"
     offspring
 }

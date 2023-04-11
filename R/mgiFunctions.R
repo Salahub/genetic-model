@@ -1,5 +1,8 @@
 #source("simulationFunctions.R")
 
+## MIT Panel reference: A genetic map of the mouse with 4006 simple
+## sequence length polymorphisms
+
 mgiUrl <- "https://www.informatics.jax.org/downloads/reports/"
 mgiPNames <- c(cope.jenk = "MGI_Copeland-Jenkins_Panel.rpt",
                eucib.bsb = "MGI_EUCIB_BSB_Panel.rpt",
@@ -79,32 +82,33 @@ filterPanelBycM <- function(panel, locs) {
 }
 
 ## pre-processing to convert mgi data to a genome object
-mgiToGenPreproc <- function(mgiPanel,
-                            cross = c("backcross", "intercross")) {
+mgiToGenome <- function(mgiPanel,
+                        cross = c("backcross", "intercross")) {
     cross <- match.arg(cross, c("backcross", "intercross"))
     legendPattern <- "([a-zA-Z0-9]+) indicates allele from ([^\n]+)"
     if (cross == "backcross") { # all have legends
         alleles <- regmatches(mgiPanel$summary, # extract from legend
                               gregexec(legendPattern,
                                        mgiPanel$summary))[[1]]
-        encodings <- c(0,1) # arbitrary
-        names(encodings) <- alleles[2, order(alleles[3,])] # consistency
+        allOrd <- order(alleles[3,]) # consistent order
+        values <- c(0,1)[allOrd]  # arbitrary values
         back <- regmatches(mgiPanel$summary, # backcross allele
                            regexec("(?<=\\)F1 x )[^\n]+",
                                    mgiPanel$summary,
                                    perl = TRUE))
-        mats <- lapply(1:nrow(mgiPanel$data),
+        gens <- lapply(1:nrow(mgiPanel$data),
                function(row) {
-                   data.frame(mv = encodings[unlist(mgiPanel$data[row,])],
-                              pv = encodings[match(back,
-                                                   sort(alleles[3,]))],
-                              chr = mgiPanel$markers$chr,
-                              pos = mgiPanel$markers$cMs,
-                              check.rows = FALSE,
-                              row.names = names(mgiPanel$data))
+                   asGenome(data.frame(mv = as.character(mgiPanel$data[row,]),
+                                       pv = alleles[2, match(back,
+                                                             alleles[3,])],
+                                       chr = mgiPanel$markers$chr,
+                                       pos = mgiPanel$markers$cMs,
+                                       check.rows = FALSE,
+                                       row.names = names(mgiPanel$data)),
+                            alleles = alleles[2, allOrd],
+                            values = values)
                })
-        list(df = mats, alleles = names(encodings),
-             values = encodings)
+        gens
     } else if (cross == "intercross") { # single case: MIT
         alleles <- c("b", "c") # c57Bl/6j or Cast
         encodings <- c(0, 1) # especially arbitrary

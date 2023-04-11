@@ -55,37 +55,39 @@ markerRandom <- function(n){
           pv = sample(c(1,0), size = n, replace = TRUE))
 }
 
-##' @title Generate distances for a genetic sequence
+##' @title Generate locations for a genetic sequence
 ##' @param nmark vector of integers of giving the number of markers on
 ##' each chromosome for which distances are generated
-##' @param distFun a list of functions which each accept an integer
-##' and return a numeric vector of length one less than the integer,
+##' @param locFuns a list of functions which each accept an integer
+##' and return a numeric vector with length equal to that integer,
 ##' recycled if not of the same length as nmark
 ##' @param ... (optional) a list of additional arguments to each
-##' function in distFun, recycled if not the same length as nmark
+##' function in locFuns, recycled if not the same length
 ##' @return a list of numeric vectors giving the distances between
 ##' markers on each chromosome
 ##' @author Chris Salahub
-generateDistances <- function(nmark, distFuns, ...) {
-    if (!is.list(distFuns)) { # simple handling of single function
-        lapply(nmark, distFuns, ...)
+generateLocations <- function(nmark, locFuns, ...) {
+    if (!is.list(locFuns)) { # simple handling of single function
+        lapply(nmark, locFuns, ...)
     } else { # more complex
         nmark <- lapply(nmark, as.list) # for argument creation
-        args <- mapply(c, nmark, ..., SIMPLIFY = FALSE)        
-        dFs <- rep(distFuns, length.out = length(nmark))
-        mapply(do.call, dFs, args, SIMPLIFY = FALSE)
+        args <- mapply(c, nmark, ..., SIMPLIFY = FALSE)
+        lFs <- rep(locFuns, length.out = length(nmark))
+        mapply(do.call, lFs, args, SIMPLIFY = FALSE)
     }
 }
 
 ##' @title Helpers for simulating genetic distances
 ##' @param nmark integer number of markers between which distances
 ##' are generated
-##' @param dists vector of distances to repeat/draw from
+##' @param delta constant distance to repeat
+##' @param min smallest numeric location, must be zero or greater
+##' @param max largest numeric location
 ##' @return a vector of length nmark - 1 drawn from dists
 ##' @author Chris Salahub
-distanceSample <- function(nmark, dists = runif(10, 50, 100)) {
-    sample(dists, nmark-1, replace = TRUE)
+locationUniform <- function(nmark, min = 0, max = 100) {
+    runif(nmark, min, max)
 }
-distanceRegular <- function(nmark, dists = 50) {
-    rep(dists, length.out = nmark-1)
+locationRegular <- function(nmark, delta = 50) {
+    delta*(1:nmark)
 }
