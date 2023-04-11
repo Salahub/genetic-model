@@ -26,8 +26,14 @@ encode <- function(annotation, alleles, values) {
 ##' @author Chris Salahub
 asGenome <- function(df, alleles, values = c(1,0),
                      missing = c(".", "-"), encoder = encode) {
-    ## safety check
+    ## safety checks
     stopifnot(all(c("mv", "pv", "chr", "pos") %in% names(df)))
+    if (is.list(alleles) & (length(alleles) != nrow(df))) {
+        stop("Length of list of alleles must match number of rows in df")
+    }
+    if (!identical(sapply(alleles, length), sapply(values, length))) {
+        stop("Lengths of alleles must match lengths of values")
+    }
     ## replace missing values
     df$mv[df$mv %in% missing] <- NA
     df$pv[df$pv %in% missing] <- NA
@@ -38,6 +44,13 @@ asGenome <- function(df, alleles, values = c(1,0),
                           function(an) {
                               c(toupper(an), tolower(an))
                           })
+    }
+    ## alleles/values not lists: repeat values
+    if (!list(alleles)) {
+        alleles <- rep(list(alleles), nrow(df))
+    }
+    if (!list(values)) {
+        values <- rep(list(values), nrow(df))
     }
     ## create encoding
     enc <- lapply(1:nrow(df),
@@ -114,5 +127,5 @@ checkGenome <- function(genome) {
         isgen <- FALSE
         cat("Distances and alleles imply differing counts of markers")
     }
-    isgen        
+    isgen
 }

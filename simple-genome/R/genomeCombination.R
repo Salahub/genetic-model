@@ -7,7 +7,7 @@
 ##' corresponding map distance units
 ##' @author Chris Salahub
 mapHaldane <- function(d) {
-    1 - exp(-d/50))/2
+    1 - exp(-d/50)/2
 }
 invHaldane <- function(pr) {
     -50*log(1 - 2*pr)

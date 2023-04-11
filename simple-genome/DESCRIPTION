@@ -1,4 +1,4 @@
-Package: genome-simulation
+Package: simpleGenome
 Version: 1.0-0
 Encoding: UTF-8
 Title: Simulating Genomes and their Dynamics
@@ -6,7 +6,7 @@ Description: This package implements the genome S3 class and its basic functions
 Authors@R: c(person(given = "Chris", family = "Salahub", role = c("aut", "cre"), email = "csalahub@uwaterloo.ca"))
 Author: Chris Salahub [aut, cre]
 Maintainer: Chris Salahub <csalahub@uwaterloo.ca>
-Depends: R (>= 3.6.0)
+Depends: R (>= 4.2.0)
 Imports:
 Suggests:
 Enhances:

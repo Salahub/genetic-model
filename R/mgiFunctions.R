@@ -78,6 +78,52 @@ filterPanelBycM <- function(panel, locs) {
          markers = outMrk, data = panel$data[, outMrk$symbol])
 }
 
+## pre-processing to convert mgi data to a genome object
+mgiToGenPreproc <- function(mgiPanel,
+                            cross = c("backcross", "intercross")) {
+    cross <- match.arg(cross, c("backcross", "intercross"))
+    legendPattern <- "([a-zA-Z0-9]+) indicates allele from ([^\n]+)"
+    if (cross == "backcross") { # all have legends
+        alleles <- regmatches(mgiPanel$summary, # extract from legend
+                              gregexec(legendPattern,
+                                       mgiPanel$summary))[[1]]
+        encodings <- c(0,1) # arbitrary
+        names(encodings) <- alleles[2, order(alleles[3,])] # consistency
+        back <- regmatches(mgiPanel$summary, # backcross allele
+                           regexec("(?<=\\)F1 x )[^\n]+",
+                                   mgiPanel$summary,
+                                   perl = TRUE))
+        mats <- lapply(1:nrow(mgiPanel$data),
+               function(row) {
+                   data.frame(mv = encodings[unlist(mgiPanel$data[row,])],
+                              pv = encodings[match(back,
+                                                   sort(alleles[3,]))],
+                              chr = mgiPanel$markers$chr,
+                              pos = mgiPanel$markers$cMs,
+                              check.rows = FALSE,
+                              row.names = names(mgiPanel$data))
+               })
+        list(df = mats, alleles = names(encodings),
+             values = encodings)
+    } else if (cross == "intercross") { # single case: MIT
+        alleles <- c("b", "c") # c57Bl/6j or Cast
+        encodings <- c(0, 1) # especially arbitrary
+        names(encodings) <- alleles
+        rplcmnt <- cbind(D = c("b", "b"), A = c("c", "b"), # example
+                         B = c("b", "c"), H = c("c", "c"))
+        mats <- lapply(1:nrow(mgiPanel$data),
+                       function(row) {
+                           mt <- t(rplcmnt[,row])
+                           data.frame(mv = mt[,1],
+                                      pv = mt[,2],
+                                      chr = mgiPanel$markers$chr,
+                                      pso = mgiPanel$markers$cMs)
+                       })
+        list(df = mats, alleles = names(encodings),
+             values = encodings)
+    } else stop("Cross setting not implemented")
+}
+
 ## a correlation helper
 mgiCorrelation <- function(panel, use = "pairwise.complete.obs",
                            method = "pearson") {
