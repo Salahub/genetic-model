@@ -13,7 +13,7 @@ asPopulation <- function(genomes) {
                                        g$location) &
                                  identical(genomes[[1]]$alleles,
                                            g$alleles)
-                             }
+                             })
     if (!all(consistent)) {
         stop("Not all genomes measure at the same locations")
     }
@@ -28,18 +28,18 @@ asPopulation <- function(genomes) {
 }
 
 ##' @title Functions for scoring genomes
-##' @param genome genome object to have its encoding summarized into
-##' a vector of scores
+##' @param encoding matrix with two columns giving the encoding of its
+##' markers to be summarixed into a vector of scores
 ##' @return numeric vector of scores
 ##' @author Chris Salahub
-scoreAdditive <- function(genome) {
-    genome$encoding[,1] + genome$encoding[,2]
+scoreAdditive <- function(encoding) {
+    encoding[,1] + encoding[,2]
 }
-scoreDominance <- function(genome) {
-    apply(genome$encoding, 1, max)
+scoreDominance <- function(encoding) {
+    apply(encoding, 1, max)
 }
-scoreHomozygous <- function(genome) {
-    genome$encoding[,1] == genome$encoding[,2]
+scoreHomozygous <- function(encoding) {
+    as.numeric(encoding[,1] == encoding[,2])
 }
 
 ##' @title Observed correlation between markers for a population
@@ -49,12 +49,13 @@ scoreHomozygous <- function(genome) {
 ##' @return a correlation matrix of nmark x nmark
 ##' @author Chris Salahub
 popCorrelation <- function(population, scoring = scoreAdditive) {
-    popScores <- sapply(population, scoring)
+    popScores <- sapply(population$encodings, scoring)
     cor(t(popScores))
 }
 
 ##' @title Theoretical correlation for a genome
-##' @param genome genome object with specified distances
+##' @param genome genome or population object with slots giving
+##' chromosomes and locations of markers
 ##' @param map function to convert distances to probabilities of
 ##' recombination
 ##' @param setting population setting (one of backcross, intercross,
@@ -94,7 +95,8 @@ corrImg <- function(corrs, ...) {
 }
 
 ##' @title Adding chromosome boundaries and labels to the plot
-##' @param genome genome object representing the correlation plot
+##' @param genome genome or population object corresponding to the
+##' correlation plot
 ##' @param borders boolean, should borders around each chromosome
 ##' block be added?
 ##' @return nothing, but add lines separating chromosome blocks to a
@@ -123,4 +125,3 @@ addChromosomeLines <- function(genome, borders = FALSE, ...) {
         }
     }
 }
-
