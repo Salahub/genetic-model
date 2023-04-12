@@ -1,1 +1,1 @@
-export("mapHaldane", "invHaldane", "mapKosambi", "invKosambi", "meiose", "sex", "encode", "asGenome", "makeGenome", "checkGenome", "scoreAdditive", "scoreDominance", "scoreHomozygous", "popCorrelation", "theoryCorrelation", "corrImg", "addChromosomeLines")
+export("mapHaldane", "invHaldane", "mapKosambi", "invKosambi", "meiose", "sex", "encode", "asGenome", "makeGenome", "checkGenome", "scoreAdditive", "scoreDominance", "scoreHomozygous", "popCorrelation", "theoryCorrelation", "corrImg", "addChromosomeLines", "asPopulation", "crossIndep")

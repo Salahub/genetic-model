@@ -14,7 +14,7 @@ asPopulation <- function(genomes) {
                                  identical(genomes[[1]]$alleles,
                                            g$alleles)
                              })
-    if (!all(consistent)) {
+    if (!all(unlist(consistent))) {
         stop("Not all genomes measure at the same locations")
     }
     ## extract encodings
@@ -25,6 +25,40 @@ asPopulation <- function(genomes) {
                 location = genomes[[1]]$location)
     class(pop) <- "population"
     pop
+}
+
+##' @title Subsetting populations by markers
+##' @param population object to be subset by markers
+##' @param inds indices of markers to keep
+##' @return a population object with all encoding matrices subset to
+##' only the markers of inds
+##' @author Chris Salahub
+subsetPopulation <- function(population, inds) {
+    newchr <- population$chromosome[inds] # subset chromosomes
+    newloc <- split(unlist(population$location)[inds], newchr)
+    structure(list(encodings = lapply(population$encodings,
+                                      function(enc) enc[inds,]),
+                   chromosome = newchr,
+                   alleles = population$alleles[inds],
+                   location = newloc),
+              class = "population")
+}
+
+##' @title Dropping encodings based on a rule
+##' @param population population with encodings to be filtered
+##' @param rule function to apply to each encoding that returns a
+##' boolean, defaults to checking if any values are NA
+##' @return a population with only those encodings for which rule
+##' returns TRUE
+##' @author Chris Salahub
+fiterPopulation <- function(population,
+                            rule = function(mat) any(is.na(mat))) {
+    trues <- sapply(population$encodings, rule)
+    structure(list(enocdings = population$encodings[trues],
+                   chromosome = population$chromosome,
+                   alleles = population$alleles,
+                   location = population$location),
+              class = "population")
 }
 
 ##' @title Functions for scoring genomes

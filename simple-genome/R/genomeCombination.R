@@ -19,24 +19,38 @@ invKosambi <- function(pr) {
     atanh(2*pr)*50 # 25*log((1 + 2*pr)/(1 - 2*pr))
 }
 
+##' @title Functions to simulate crossing over
+##' @param probs vector of probabilities of cross overs between
+##' markers
+##' @param locs vector of locations of markers on a chromosome
+##' @return indices of cross over events
+##' @author Chris Salahub
+crossIndep <- function(probs, locs) {
+    breaks <- runif(length(probs))
+    which(breaks < probs)
+}
+
 ##' @title Simulating meiosis under non-interference
 ##' @param genome a genome object which will be meiosed
 ##' @param probs (optional) custom probabilities of recombination
 ##' which override distance calculations
+##' @param crossFun (optional) function which accepts a vector of
+##' probabilities and marker positions and returns the indices where
+##' crossovers occurred
 ##' @param map function which accepts distances stored in the genome
 ##' object and returns probabilities of recombination
 ##' @return a list of encodings split by chromosome with certain rows
 ##' of the encoding recombined
 ##' @author Chris Salahub
-meiose <- function(genome, probs = NULL, map = mapHaldane) {
+meiose <- function(genome, probs = NULL, crossFun = crossIndep,
+                   map = mapHaldane) {
     encodings <- split(genome$alleles, genome$chromosome)
     dists <- diff(genome$location)
     ## write a helper to drift a single chromosome
     chromDrift <- function(copies, probs) {
         copy1 <- copies[,1]
         copy2 <- copies[,2]
-        breaks <- runif(length(probs))
-        crossovers <- which(breaks < probs)
+        crossovers <- crossFun(probs, genome$location)
         for (ii in seq_along(crossovers)) {
             crossPos <- crossovers[ii]
             inter <- copy2[1:crossPos]

@@ -34,6 +34,21 @@ makeGenome <- function(nmark, alleles, markerFuns = markerHybrid,
     genome
 }
 
+##' @title Subsetting a genome object
+##' @param genome object to be subset
+##' @param inds indices of markers to be kept
+##' @return a genome object containing only the markers at inds
+##' @author Chris Salahub
+subsetGenome <- function(genome, inds) {
+    newchr <- genome$chromosome[inds] # subset chromosomes
+    newloc <- split(unlist(genome$location)[inds], newchr)
+    structure(list(encoding = genome$encoding[inds,],
+                   chromosome = newchr,
+                   alleles = genome$alleles[inds],
+                   location = newloc),
+              class = "genome")
+}
+
 ##' @title Checking if an object is a valid genome
 ##' @param genome object to be checked
 ##' @return TRUE if the object is a genome, otherwise text outlining
