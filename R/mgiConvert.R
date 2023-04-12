@@ -1,3 +1,9 @@
+## load functions, set image output directory
+library(simpleGenome)
+source("mgiFunctions.R")
+imgDir <- "../img/"
+dataDir <- "../data/"
+
 ## READ/PROCESS MGI DATA #############################################
 
 ##' another source of experimental data is the MGI website, which has
@@ -41,17 +47,13 @@ mgiSelect <- names(mgiFiltered)[which(mgiPanel.cross == "backcross")]
 mgiGenomes <- vector(mode = "list", length = length(mgiSelect))
 names(mgiGenomes) <- mgiSelect # set names
 for (nm in mgiSelect) {
-    cat("\r - Panel : ", nm)
+    cat(" - Panel : ", nm, "\n")
     mgiGenomes[nm] <- list(mgiToGenome(mgiFiltered[[nm]],
                                        mgiPanel.cross[nm]))
 }
-##' convert to populations for ease of storage
+##' convert to populations for smaller size
 mgiPanelPops <- lapply(mgiGenomes, asPopulation)
-##' save these as RData files
-for (nm in names(mgiPanelPops)) {
-    assign(nm, mgiPanelPops[nm])
-    save(nm, file = paste0(nm, ".RData"))
-}
+##' these can now be saved as RDA files separately
 
 ## remove unnecessary data
 rm(list = c("mgiMarkers", "mgiPanels.cMs", "mgiPanels.mrkr",

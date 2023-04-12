@@ -4,20 +4,20 @@
 ## sequence length polymorphisms
 
 mgiUrl <- "https://www.informatics.jax.org/downloads/reports/"
-mgiPNames <- c(cope.jenk = "MGI_Copeland-Jenkins_Panel.rpt",
-               eucib.bsb = "MGI_EUCIB_BSB_Panel.rpt",
-               eucib.bss = "MGI_EUCIB_BSS_Panel.rpt",
-               jax.bsb = "MGI_JAX_BSB_Panel.rpt",
-               jax.bss = "MGI_JAX_BSS_Panel.rpt",
-               jax.mutbcb = "MGI_JAX_Mouse_Mutant_Resource_BCB_Panel.rpt",
-               jax.mutbss = "MGI_JAX_Mouse_Mutant_Resource_BSS_Panel.rpt",
-               koz.fvc58 = "MGI_Kozak_FvC58_Panel.rpt",
-               koz.fvspr = "MGI_Kozak_FvSpr_Panel.rpt",
-               koz.skive = "MGI_Kozak_Skive_Panel.rpt",
+mgiPNames <- c(cope_jenk = "MGI_Copeland-Jenkins_Panel.rpt",
+               eucib_bsb = "MGI_EUCIB_BSB_Panel.rpt",
+               eucib_bss = "MGI_EUCIB_BSS_Panel.rpt",
+               jax_bsb = "MGI_JAX_BSB_Panel.rpt",
+               jax_bss = "MGI_JAX_BSS_Panel.rpt",
+               jax_mutbcb = "MGI_JAX_Mouse_Mutant_Resource_BCB_Panel.rpt",
+               jax_mutbss = "MGI_JAX_Mouse_Mutant_Resource_BSS_Panel.rpt",
+               koz_fvc58 = "MGI_Kozak_FvC58_Panel.rpt",
+               koz_fvspr = "MGI_Kozak_FvSpr_Panel.rpt",
+               koz_skive = "MGI_Kozak_Skive_Panel.rpt",
                mit = "MGI_MIT_Panel.rpt",
-               reev.c16 = "MGI_Reeves_Chr_16_Panel.rpt",
+               reev_c16 = "MGI_Reeves_Chr_16_Panel.rpt",
                seldin = "MGI_Seldin_Panel.rpt",
-               ucla.bsb = "MGI_UCLA_BSB_Panel.rpt")
+               ucla_bsb = "MGI_UCLA_BSB_Panel.rpt")
 mgiMNames <- c("MRK_List1.rpt", "MRK_List2.rpt")
 
 ## read in MGI data (http://www.informatics.jax.org/)
