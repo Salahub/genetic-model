@@ -51,8 +51,8 @@ subsetPopulation <- function(population, inds) {
 ##' @return a population with only those encodings for which rule
 ##' returns TRUE
 ##' @author Chris Salahub
-fiterPopulation <- function(population,
-                            rule = function(mat) any(is.na(mat))) {
+filterPopulation <- function(population,
+                             rule = function(mat) any(is.na(mat))) {
     trues <- sapply(population$encodings, rule)
     structure(list(enocdings = population$encodings[trues],
                    chromosome = population$chromosome,
