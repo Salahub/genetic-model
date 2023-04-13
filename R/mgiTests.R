@@ -100,12 +100,13 @@ panelsFilt <- lapply(panels, mgiDropZeroPanelist)
 panelsComplete <- lapply(panelsFilt, mgiDropBadMarker)
 ## compute correlation
 panelsCorr <- lapply(panelsComplete, popCorrelation)
-## visualize
-corrImg(panelsSimCorr[["ucla_bsb"]], xaxt = "n", yaxt = "n")
-addChromosomeLines(panelsComplete[["ucla_bsb"]], lncol = "black")
+## visualize a chosen panel
+corrImg(panelsCorr[["jax_bsb"]], xaxt = "n", yaxt = "n")
+addChromosomeLines(panelsComplete[["jax_bsb"]], lncol = "black")
 
-simP.th <- mapply(mgiTheory, simP.filt,
-                  mgiPanel.cross[names(simPanels)])
+## get theoretical correlations
+panelsThoery <- mapply(theoryCorrelation, genome = panelsComplete,
+                       setting = "backcross")
 
 ## common markers for the bsb panels
 bsb.common <- intersect(simP.filt$jax.bsb$markers$symbol,

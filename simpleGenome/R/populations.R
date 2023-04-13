@@ -105,9 +105,8 @@ theoryCorrelation <- function(genome, map = mapHaldane,
                     backcross = 1,
                     halfback = 1/sqrt(2),
                     0)
-    dists <- sapply(genome$location, diff) # only distances are used
     chrinds <- c(0, cumsum(table(genome$chromosome)))
-    pos <- lapply(dists, function(el) c(0, cumsum(el)))
+    pos <- genome$location # shorthand
     M <- chrinds[length(dists)+1] # dimension of matrix
     mat <- matrix(0, nrow = M, ncol = M)
     for (ii in 1:(length(chrinds)-1)) { # fill each block
