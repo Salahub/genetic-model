@@ -133,10 +133,13 @@ corrImg <- function(corrs, ...) {
 ##' correlation plot
 ##' @param borders boolean, should borders around each chromosome
 ##' block be added?
+##' @param lncol color of lines
+##' @param ... additional arguments to pass to rect if borders = TRUE
 ##' @return nothing, but add lines separating chromosome blocks to a
 ##' plotted correlation heat map
 ##' @author Chris Salahub
-addChromosomeLines <- function(genome, borders = FALSE, ...) {
+addChromosomeLines <- function(genome, borders = FALSE,
+                               lncol = "gray70", ...) {
     tab <- table(genome$chromosome)
     wid <- 1/(sum(tab)-1) # relative width unit
     chrTab <- tab*wid # chromosome widths
@@ -144,7 +147,7 @@ addChromosomeLines <- function(genome, borders = FALSE, ...) {
     for (ii in 1:length(chrTab)) { # add lines, labels
         abline(v = c(postns[ii], postns[ii+1]),
                h = c(1 - postns[ii], 1 - postns[ii+1]),
-               col = "gray70")
+               col = lncol)
         mtext(names(tab)[ii], side = 3,
               at = postns[ii]/2 + postns[ii+1]/2)
         mtext(names(tab)[ii], side = 2,

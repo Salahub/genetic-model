@@ -102,7 +102,7 @@ panelsComplete <- lapply(panelsFilt, mgiDropBadMarker)
 panelsSimCorr <- lapply(panelsComplete, popCorrelation)
 ## visualize
 corrImg(panelsSimCorr[["ucla_bsb"]], xaxt = "n", yaxt = "n")
-addChromosomeLines(panelsComplete[["ucla_bsb"]])
+addChromosomeLines(panelsComplete[["ucla_bsb"]], col = "black")
 
 simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])
