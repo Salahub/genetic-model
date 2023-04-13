@@ -38,7 +38,8 @@ simGenome <- function(nmark, alleles, markerFuns = markerHybrid,
 ##' @title Filling the encoding of a genome
 ##' @param location list of marker locations by chromosome
 ##' @param alleles list of alleles by marker location
-##' @param chromosome ordered factor giving chromosome values
+##' @param chromosome factor giving chromosome values with levels
+##' ordered as they should appear in plots, etc.
 ##' @param markerFuns list of functions to generate marker
 ##' observations by chromosome
 ##' @return a genome object with the given locations with encodings
