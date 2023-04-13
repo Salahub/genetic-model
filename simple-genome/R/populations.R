@@ -54,7 +54,7 @@ subsetPopulation <- function(population, inds) {
 filterPopulation <- function(population,
                              rule = function(mat) any(is.na(mat))) {
     trues <- sapply(population$encodings, rule)
-    structure(list(enocdings = population$encodings[trues],
+    structure(list(encodings = population$encodings[trues],
                    chromosome = population$chromosome,
                    alleles = population$alleles,
                    location = population$location),
@@ -104,7 +104,7 @@ theoryCorrelation <- function(genome, map = mapHaldane,
                     backcross = 1,
                     halfback = 1/sqrt(2),
                     0)
-    dists <- diff(genome$location) # only distances are used
+    dists <- sapply(genome$location, diff) # only distances are used
     chrinds <- c(0, cumsum(table(genome$chromosome)))
     pos <- lapply(dists, function(el) c(0, cumsum(el)))
     M <- chrinds[length(dists)+1] # dimension of matrix
@@ -137,18 +137,17 @@ corrImg <- function(corrs, ...) {
 ##' plotted correlation heat map
 ##' @author Chris Salahub
 addChromosomeLines <- function(genome, borders = FALSE, ...) {
-    runs <- rle(genome$chromosome) # run lengths by chromosome
-    nmarks <- runs$lengths # counts of each chromosome
-    wid <- 1/(sum(nmarks)-1) # relative width unit
-    chrTab <- nmarks[ord]*wid # chromosome widths
+    tab <- table(genome$chromosome)
+    wid <- 1/(sum(tab)-1) # relative width unit
+    chrTab <- tab*wid # chromosome widths
     postns <- cumsum(c(-wid/2, chrTab))
     for (ii in 1:length(chrTab)) { # add lines, labels
         abline(v = c(postns[ii], postns[ii+1]),
                h = c(1 - postns[ii], 1 - postns[ii+1]),
                col = "gray70")
-        mtext(runs$values[ii], side = 3,
+        mtext(names(tab)[ii], side = 3,
               at = postns[ii]/2 + postns[ii+1]/2)
-        mtext(runs$values[ii], side = 2,
+        mtext(names(tab)[ii], side = 2,
               at = 1 - postns[ii]/2 - postns[ii+1]/2,
               las = 1)
     }

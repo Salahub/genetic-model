@@ -70,20 +70,26 @@ meiose <- function(genome, probs = NULL, crossFun = crossIndep,
 ##' @param genome1 a genome object
 ##' @param genome2 a genome object with markers observed at the same
 ##' locations as on genome 1
+##' @param probs1 (optional) probabilities to be passed into meiose
+##' for genome1
+##' @param probs2 (optional) probabilities to be passed into meiose
+##' for genome2
+##' @param crossFun (optional) function to dictate crossing over for
+##' both genomes
 ##' @param map function to convert map distances to probabilities
 ##' @return a genome object with the same marker locations as genome1
 ##' and genome2 with its encodings recombined
 ##' @author Chris Salahub
 sex <- function(genome1, genome2, probs1 = NULL, probs2 = NULL,
-                map = mapHaldane) {
+                map = mapHaldane, crossFun = crossIndep) {
     ## perform a distance check
     if (!identical(genome1$location, genome2$location) |
         !identical(genome1$chromosome, genome2$chromosome)) {
         stop("Markers don't match")
     }
     ## meiose alleles
-    gamete1 <- meiose(genome1, probs1, map = map)
-    gamete2 <- meiose(genome2, probs2, map = map)
+    gamete1 <- meiose(genome1, probs1, crossFun = crossFun, map = map)
+    gamete2 <- meiose(genome2, probs2, crossFun = crossFun, map = map)
     ## pick from the copies for each genome
     chosenCopies <- replicate(length(gamete1),
                               sample(c(1,2), size = 2, replace = TRUE),

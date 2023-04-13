@@ -1,32 +1,109 @@
-## load functions, set image output directory
+## load package with data, genome functions
 library(simpleGenome)
-source("mgiFunctions.R")
-imgDir <- "../img/"
-dataDir <- "../data/"
 
-## CORRELATION FOR ALL DATA ##########################################
+## FUNCTIONS TO ANALYZE, SIMULATE MGI PANELS #########################
+## drop bad panelists
+mgiDropZeroPanelist <- function(panel) {
+    filterPopulation(panel,
+                     rule = function(enc) !all(is.na(enc[,1])) &
+                                          !all(is.na(enc[,2])))
+}
 
-## get observed correlation matrices
-mgiCorrs <- lapply(mgiFiltered, mgiCorrelation)
-## get theoretical correlations
-mgiCorrs.th <- mapply(mgiTheory, mgiFiltered, mgiPanel.cross)
-## view all the distances in the data
-mgiDists <- lapply(mgiFiltered,
-                   function(pan) lapply(split(pan$markers$cMs,
-                                              pan$markers$chr), diff))
-## somewhat misleading: these are not necessarily all good markers
-mgiDists <- lapply(lapply(mgiFiltered, mgiDropBadMarker, prop = 1/3),
-                   function(pan) lapply(split(pan$markers$cMs,
-                                              pan$markers$chr), diff))
+## filter bad markers
+mgiDropBadMarker <- function(panel, prop = 0) {
+    bad <- apply(do.call(cbind, panel$encodings), 1,
+                 function(row) {
+                     sum(is.na(row))/(2*length(panel$encodings)) > prop
+                 })
+    subsetPopulation(panel, inds = !bad)
+}
+
+## simulate panel correlation based on its setting and cM distances
+simulateMGICor <- function(panel, reps = 1000, meioseArgs = list(),
+                           setting = c("backcross", "intercross"),
+                           asArray = FALSE) {
+    setting <- match.arg(setting) # identify case
+    M <- with(panel, makeGenome(location, alleles, chromosome,
+                                markerFun = markerPureDom))
+    F <- with(panel, makeGenome(location, alleles, chromosome,
+                                markerFun = markerPureRec))
+    F1 <- do.call(sex, args = c(genome1 = M, genome2 = F, meioseArgs))
+    allcors <- vector("list", reps)
+    if (setting == "intercross") {
+        for (ii in 1:reps) {
+            pop <- asPopulation(replicate(npop, sex(F1, F1),
+                                          simplify = FALSE))
+            allcors[[ii]] <- popCorrelation(pop)
+            if (ii %% 100 == 0) cat("\r -- Simulated population ", ii)
+        }
+    } else if (setting == "backcross") {
+        for (ii in 1:reps) {
+            pop <- asPopulation(replicate(npop, sex(F1, M),
+                                          simplify = FALSE))
+            allcors[[ii]] <- popCorrelation(pop)
+            if (ii %% 100 == 0) cat("\r -- Simulated population ", ii)
+        }
+    } else {
+        stop("Setting unknown")
+    }
+    if (asArray) { # place in an appropriate array
+        tempcor <- array(0, dim = c(ncom, ncom, nsim))
+        for (ii in seq_along(allcors)) tempcor[,,ii] <- allcors[[ii]]
+        allcors <- tempcor # for output
+    }
+    allcors
+}
+
+## suppress zeros and reconstruct a correlation matrix
+zeroEigSuppress <- function(sigma) {
+    decom <- eigen(sigma)
+    eigs <- decom$values
+    eigs[eigs < 0] <- 0 # zero negatives
+    recon <- decom$vectors %*% diag(eigs) %*% t(decom$vectors)
+    recon
+}
+
+## compute mgi correlation and report population mean for marker pairs
+mgiCorrMeans <- function(panel, use = "pairwise.complete.obs",
+                         method = "pearson") {
+    dropLowTri <- function(mat) { # keep upper entries
+        mat[!upper.tri(mat)] <- NA
+        mat
+    }
+    srtd <- panel$data[, order(panel$markers$chr)] # group chromosomes
+    dotDrop <- apply(srtd, 2, # turn dots to NA
+                     function(mrk) {
+                         temp <- mrk
+                         temp[temp == "."] <- NA
+                         temp
+                     })
+    numer <- apply(dotDrop, 2, function(mrk) unclass(factor(mrk)))
+    splt <- lapply(split(panel$markers$symbol, panel$markers$chr),
+                   function(mrks) numer[, mrks]) # intra chromosome
+    cors <- lapply(splt, cor, use = use, method = method)
+    cors <- lapply(cors, dropLowTri)
+    means <- lapply(splt, colMeans) # means by marker
+    pwmns <- lapply(means, function(mn) outer(mn, mn, pmax)) # ref mean
+    pwmns <- lapply(pwmns, dropLowTri)
+    list(corr = cors, means = pwmns)
+}
 
 ## FILTERING AND SIMULATING A SUBSET #################################
 
-## simulate those that have large enough sample (removing bad markers)
-## preparation
-simPanels <- mgiFiltered[c("jax.bsb", "jax.bss", "mit", "ucla.bsb")]
-simPanels <- lapply(simPanels, mgiDropZeroPanelist)
-simP.filt <- lapply(simPanels, mgiDropBadMarker)
-simP.corr <- lapply(simP.filt, mgiCorrelation, use = "all.obs")
+## load in the pre-processed panels, focusing on a few with large
+## samples when controlling for complete data alone
+data(jax_bsb); data(jax_bss); data(ucla_bsb)
+panels <- list("jax_bsb" = jax_bsb, "jax_bss" = jax_bss,
+               "ucla_bsb" = ucla_bsb)
+## remove bad markers, panelists
+panelsFilt <- lapply(panels, mgiDropZeroPanelist)
+panelsComplete <- lapply(panelsFilt, mgiDropBadMarker)
+## compute correlation
+panelsSimCorr <- lapply(panelsComplete, popCorrelation)
+## visualize
+corrImg(panelsSimCorr[["ucla_bsb"]], xaxt = "n", yaxt = "n")
+addChromosomeLines(panelsComplete[["ucla_bsb"]])
+
 simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])
 
