@@ -19,7 +19,7 @@ asPopulation <- function(genomes) {
         stop("Not all genomes measure at the same locations")
     }
     ## get marker names
-    marker <- rownames(genomes[[1]]$encodings)
+    marker <- rownames(genomes[[1]]$encoding)
     ## extract encodings without names
     encodings <- lapply(genomes,
                         function(g) {
@@ -47,7 +47,7 @@ subsetPopulation <- function(population, inds) {
     structure(list(encodings = lapply(population$encodings,
                                       function(enc) enc[inds,]),
                    chromosome = newchr,
-                   marker = population$markers[inds],
+                   marker = population$marker[inds],
                    alleles = population$alleles[inds],
                    location = newloc),
               class = "population")
