@@ -105,7 +105,7 @@ corrImg(panelsCorr[["jax_bsb"]], xaxt = "n", yaxt = "n")
 addChromosomeLines(panelsComplete[["jax_bsb"]], lncol = "black")
 
 ## get theoretical correlations
-panelsThoery <- mapply(theoryCorrelation, genome = panelsComplete,
+panelsTheory <- mapply(theoryCorrelation, genome = panelsComplete,
                        setting = "backcross")
 
 ## common markers for the bsb panels
