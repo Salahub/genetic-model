@@ -44,8 +44,10 @@ crossIndep <- function(probs, locs) {
 ##' @author Chris Salahub
 meiose <- function(genome, probs = NULL, crossFun = crossIndep,
                    map = mapHaldane) {
-    encodings <- split(genome$alleles, genome$chromosome)
-    dists <- diff(genome$location)
+    encodings <- split(genome$encoding, genome$chromosome)
+    encodings <- lapply(encodings, # fix structure
+                        function(vec) matrix(vec, ncol = 2))
+    dists <- lapply(genome$location, diff)
     ## write a helper to drift a single chromosome
     chromDrift <- function(copies, probs) {
         copy1 <- copies[,1]
