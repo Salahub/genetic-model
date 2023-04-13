@@ -104,7 +104,7 @@ sex <- function(genome1, genome2, probs1 = NULL, probs2 = NULL,
     offspring <- list(encoding = do.call(rbind, offspringEnc),
                       alleles = genome1$alleles,
                       chromosome = genome1$chromosome,
-                      location = genome1$locations)
+                      location = genome1$location)
     class(offspring) <- "genome"
     offspring
 }
