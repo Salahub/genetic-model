@@ -88,7 +88,8 @@ mgiCorrMeans <- function(panel, use = "pairwise.complete.obs",
     list(corr = cors, means = pwmns)
 }
 
-## FILTERING AND SIMULATING A SUBSET #################################
+
+## FILTERING AND DISPLAYING A SUBSET #################################
 
 ## load in the pre-processed panels, focusing on a few with large
 ## samples when controlling for complete data alone
@@ -107,6 +108,12 @@ addChromosomeLines(panelsComplete[["jax_bsb"]], lncol = "black")
 ## get theoretical correlations
 panelsTheory <- mapply(theoryCorrelation, genome = panelsComplete,
                        setting = "backcross")
+## visualize again
+corrImg(panelsTheory[["jax_bsb"]], xaxt = "n", yaxt = "n")
+addChromosomeLines(panelsComplete[["jax_bsb"]], lncol = "black")
+
+
+## SIMULATIONS #######################################################
 
 ## common markers for the bsb panels
 bsb.common <- intersect(simP.filt$jax.bsb$markers$symbol,

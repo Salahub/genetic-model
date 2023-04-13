@@ -3,7 +3,8 @@
 ##' @title Create a population object
 ##' @param genomes list of genomes measured at the same locations
 ##' @return a population object with the same slots as a genome object
-##' but where encoding is a list of encodings for all entries
+##' but where encoding is a list of encodings for all entries and a
+##' slot giving marker names is added
 ##' @author Chris Salahub
 asPopulation <- function(genomes) {
     ## perform structural check that all measure the same spots
@@ -17,11 +18,18 @@ asPopulation <- function(genomes) {
     if (!all(unlist(consistent))) {
         stop("Not all genomes measure at the same locations")
     }
-    ## extract encodings
-    encodings <- lapply(genomes, function(g) g$encoding)
+    ## get marker names
+    marker <- rownames(genomes[[1]]$encodings)
+    ## extract encodings without names
+    encodings <- lapply(genomes,
+                        function(g) {
+                            enc <- g$encoding
+                            rownames(enc) <- NULL
+                            enc
+                        })
     ## make object
     pop <- list(encodings = encodings, chromosome = genomes[[1]]$chr,
-                alleles = genomes[[1]]$alleles,
+                alleles = genomes[[1]]$alleles, marker = marker,
                 location = genomes[[1]]$location)
     class(pop) <- "population"
     pop
@@ -39,6 +47,7 @@ subsetPopulation <- function(population, inds) {
     structure(list(encodings = lapply(population$encodings,
                                       function(enc) enc[inds,]),
                    chromosome = newchr,
+                   marker = population$markers[inds]
                    alleles = population$alleles[inds],
                    location = newloc),
               class = "population")
@@ -57,6 +66,7 @@ filterPopulation <- function(population,
     structure(list(encodings = population$encodings[trues],
                    chromosome = population$chromosome,
                    alleles = population$alleles,
+                   marker = population$marker,
                    location = population$location),
               class = "population")
 }

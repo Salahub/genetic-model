@@ -155,8 +155,7 @@ mgiGenomes <- vector(mode = "list", length = length(mgiSelect))
 names(mgiGenomes) <- mgiSelect # set names
 for (nm in mgiSelect) {
     cat(" - Panel : ", nm, "\n")
-    mgiGenomes[nm] <- list(mgiToGenome(mgiFiltered[[nm]],
-                                       mgiPanel.cross[nm]))
+    mgiGenomes[nm] <- list(mgiBackCrossToGenome(mgiFiltered[[nm]]))
 }
 ##' convert to populations for smaller size
 mgiPanelPops <- lapply(mgiGenomes, asPopulation)

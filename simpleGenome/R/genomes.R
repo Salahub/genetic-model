@@ -173,6 +173,7 @@ asGenome <- function(df, alleles, values = c(1,0),
                   function(ii) encoder(df[ii, c("mv", "pv")],
                                        alleles[[ii]], values[[ii]]))
     }
+    rownames(enc) <- rownames(df) # keep marker names if present
     chrom <- if (is.factor(df$chr)) {
                  df$chr }
              else factor(df$chr, levels = unique(df$chr))
