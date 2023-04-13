@@ -28,7 +28,8 @@ simulateMGICor <- function(panel, npop = length(panel$encodings),
                                 markerFun = markerPureDom))
     F <- with(panel, makeGenome(location, alleles, chromosome,
                                 markerFun = markerPureRec))
-    F1 <- do.call(sex, args = c(genome1 = M, genome2 = F, meioseArgs))
+    F1 <- do.call(sex, args = c(genome1 = list(M), genome2 = list(F),
+                                meioseArgs))
     allcors <- vector("list", reps)
     if (setting == "intercross") {
         for (ii in 1:reps) {
@@ -138,9 +139,9 @@ bsbSubTheory <- theoryCorrelation(bsbSubset$jax, setting = "backcross")
 set.seed(30211)
 mnPop <- ceiling(mean(c(length(bsbPanels$jax$encodings),
                         length(bsbPanels$ucla$encodings))))
-bsb.cor <- simulateMGICor(bsbSubset$jax, reps = nsim, npop = mnPop,
-                          setting = "backcross",
-                          asArray = TRUE) # simulated crosses
+bsbSimCor <- simulateMGICor(bsbSubset$jax, reps = nsim, npop = mnPop,
+                            setting = "backcross",
+                            asArray = TRUE) # simulated crosses
 ## get quantiles
 bsb.jaxcorr <- simP.corr[["jax.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
 bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.sub$symbol, bsb.sub$symbol]

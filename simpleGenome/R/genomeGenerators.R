@@ -27,7 +27,7 @@ generateEncoding <- function(nmark,
     } else {
         enc <- mapply(do.call, markerFuns, as.list(nmark))
     }
-    enc
+    do.call(rbind, enc)
 }
 
 ##' @title Helpers to simulate marker encodings
