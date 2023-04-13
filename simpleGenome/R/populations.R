@@ -118,12 +118,15 @@ theoryCorrelation <- function(genome, map = mapHaldane,
                     0)
     chrinds <- c(0, cumsum(table(genome$chromosome)))
     pos <- genome$location # shorthand
+    pr <- lapply(pos, # matrix of recombination probabilities
+                 function(ls) 1-2*map(abs(outer(ls, ls, FUN = `-`))))
     M <- chrinds[length(pos)+1] # dimension of matrix
     mat <- matrix(0, nrow = M, ncol = M)
-    for (ii in 1:(length(chrinds)-1)) { # fill each block
-        mat[(chrinds[ii]+1):chrinds[ii+1],
-        (chrinds[ii]+1):chrinds[ii+1]] <-
-            (1 - 2*map(abs(outer(pos[[ii]], pos[[ii]], FUN = `-`))))
+    for (ii in seq_along(pr)) { # fill each block
+        if (length(pr[[ii]]) != 0) { # safe replacement for zero len
+            mat[(chrinds[ii]+1):chrinds[ii+1],
+            (chrinds[ii]+1):chrinds[ii+1]] <- pr[[ii]]
+        }
     }
     gamma*mat # multiply by constant and return
 }

@@ -124,15 +124,14 @@ bsbPanels <- with(panelsComplete,
                        ucla = subsetPopulation(ucla_bsb,
                                 inds = ucla_bsb$marker %in% bsbCommon)))
 
-## the BSB simulations for chromosomes 2, 4, and 18
+## perform simulations for chromosomes 2, 4, and 18
 ## set up the simulated marker set
-bsb.sub <- bsb.markers[bsb.markers$chr %in% c("2","4","18"),]
-ncom <- nrow(bsb.sub) # number of markers
+bsbSubset <- lapply(bsbPanels, subsetPopulation,
+                    inds = bsbPanels$jax$chromosome %in% c("2","4","18"))
 nsim <- 10000 # number of simulated crosses
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
-bsb.subthry <- theoryCor(lapply(split(bsb.sub$cMs,
-                                      bsb.sub$chr)[c(2,3,1)],
-                                diff))
+## theoretical correlation
+bsb.subthry <- theoryCorrelation(bsbSubset$jax, setting = "backcross")
 
 ## simulate the cross with 80 mice
 set.seed(30211)
