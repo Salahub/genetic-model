@@ -47,7 +47,7 @@ subsetPopulation <- function(population, inds) {
     structure(list(encodings = lapply(population$encodings,
                                       function(enc) enc[inds,]),
                    chromosome = newchr,
-                   marker = population$markers[inds]
+                   marker = population$markers[inds],
                    alleles = population$alleles[inds],
                    location = newloc),
               class = "population")
