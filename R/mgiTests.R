@@ -99,10 +99,10 @@ panels <- list("jax_bsb" = jax_bsb, "jax_bss" = jax_bss,
 panelsFilt <- lapply(panels, mgiDropZeroPanelist)
 panelsComplete <- lapply(panelsFilt, mgiDropBadMarker)
 ## compute correlation
-panelsSimCorr <- lapply(panelsComplete, popCorrelation)
+panelsCorr <- lapply(panelsComplete, popCorrelation)
 ## visualize
 corrImg(panelsSimCorr[["ucla_bsb"]], xaxt = "n", yaxt = "n")
-addChromosomeLines(panelsComplete[["ucla_bsb"]], col = "black")
+addChromosomeLines(panelsComplete[["ucla_bsb"]], lncol = "black")
 
 simP.th <- mapply(mgiTheory, simP.filt,
                   mgiPanel.cross[names(simPanels)])

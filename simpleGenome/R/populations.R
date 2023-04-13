@@ -80,11 +80,12 @@ scoreHomozygous <- function(encoding) {
 ##' @param population a list of genome objects measured at the same
 ##' nmark genetic locations
 ##' @param scoring function to summarize each genome into a vector
+##' @param ... additional arguments to pass to cor
 ##' @return a correlation matrix of nmark x nmark
 ##' @author Chris Salahub
-popCorrelation <- function(population, scoring = scoreAdditive) {
+popCorrelation <- function(population, scoring = scoreAdditive, ...) {
     popScores <- sapply(population$encodings, scoring)
-    cor(t(popScores))
+    cor(t(popScores), ...)
 }
 
 ##' @title Theoretical correlation for a genome
