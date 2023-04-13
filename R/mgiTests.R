@@ -19,7 +19,8 @@ mgiDropBadMarker <- function(panel, prop = 0) {
 }
 
 ## simulate panel correlation based on its setting and cM distances
-simulateMGICor <- function(panel, reps = 1000, meioseArgs = list(),
+simulateMGICor <- function(panel, npop = length(panel$encodings),
+                           reps = 1000, meioseArgs = list(),
                            setting = c("backcross", "intercross"),
                            asArray = FALSE) {
     setting <- match.arg(setting) # identify case
@@ -131,15 +132,15 @@ bsbSubset <- lapply(bsbPanels, subsetPopulation,
 nsim <- 10000 # number of simulated crosses
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 ## theoretical correlation
-bsb.subthry <- theoryCorrelation(bsbSubset$jax, setting = "backcross")
+bsbSubTheory <- theoryCorrelation(bsbSubset$jax, setting = "backcross")
 
 ## simulate the cross with 80 mice
 set.seed(30211)
-bsb.cor <- simulateMGI(bsb.sub,
-                       ceiling(mean(c(nrow(simP.filt[["jax.bsb"]]$data),
-                                      nrow(simP.filt[["ucla.bsb"]]$data)))),
-                       chrOrd = c(2,3,1),
-                       reps = nsim, asArray = TRUE) # simulated crosses
+mnPop <- ceiling(mean(c(length(bsbPanels$jax$encodings),
+                        length(bsbPanels$ucla$encodings))))
+bsb.cor <- simulateMGICor(bsbSubset$jax, reps = nsim, npop = mnPop,
+                          setting = "backcross",
+                          asArray = TRUE) # simulated crosses
 ## get quantiles
 bsb.jaxcorr <- simP.corr[["jax.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
 bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.sub$symbol, bsb.sub$symbol]

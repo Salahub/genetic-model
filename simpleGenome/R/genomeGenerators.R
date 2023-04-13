@@ -23,7 +23,7 @@ generateBiAllelic <- function(nmark) {
 generateEncoding <- function(nmark,
                              markerFuns = markerPureDom) {
     if (!is.list(markerFuns)) {
-        enc <- mapply(markerFuns, nmark = nmark)
+        enc <- mapply(markerFuns, n = nmark)
     } else {
         enc <- mapply(do.call, markerFuns, as.list(nmark))
     }
