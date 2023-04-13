@@ -43,7 +43,8 @@ asPopulation <- function(genomes) {
 ##' @author Chris Salahub
 subsetPopulation <- function(population, inds) {
     newchr <- population$chromosome[inds] # subset chromosomes
-    newloc <- split(unlist(population$location)[inds], newchr)
+    newloc <- split(unlist(population$location,
+                           use.names = FALSE)[inds], newchr)
     structure(list(encodings = lapply(population$encodings,
                                       function(enc) enc[inds,]),
                    chromosome = newchr,

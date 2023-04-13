@@ -102,27 +102,27 @@ panelsComplete <- lapply(panelsFilt, mgiDropBadMarker)
 ## compute correlation
 panelsCorr <- lapply(panelsComplete, popCorrelation)
 ## visualize a chosen panel
-corrImg(panelsCorr[["jax_bsb"]], xaxt = "n", yaxt = "n")
-addChromosomeLines(panelsComplete[["jax_bsb"]], lncol = "black")
+corrImg(panelsCorr[["ucla_bsb"]], xaxt = "n", yaxt = "n")
+addChromosomeLines(panelsComplete[["ucla_bsb"]], lncol = "black")
 
 ## get theoretical correlations
 panelsTheory <- mapply(theoryCorrelation, genome = panelsComplete,
                        setting = "backcross")
 ## visualize again
-corrImg(panelsTheory[["jax_bsb"]], xaxt = "n", yaxt = "n")
-addChromosomeLines(panelsComplete[["jax_bsb"]], lncol = "black")
+corrImg(panelsTheory[["ucla_bsb"]], xaxt = "n", yaxt = "n")
+addChromosomeLines(panelsComplete[["ucla_bsb"]], lncol = "black")
 
 
 ## SIMULATIONS #######################################################
 
-## common markers for the bsb panels
-bsb.common <- intersect(simP.filt$jax.bsb$markers$symbol,
-                        simP.filt$ucla.bsb$markers$symbol)
-bsb.markers <- simP.filt$jax.bsb$markers[
-                   simP.filt$jax.bsb$markers$symbol %in% bsb.common,]
-bsb.Order <- order(as.numeric(bsb.markers$chr))
-bsb.TabOrder <- order(as.numeric(unique(bsb.markers$chr)))
-bsb.markers <- bsb.markers[bsb.Order,]
+## subset BSB panels by common markers
+bsbCommon <- intersect(panelsComplete$jax_bsb$marker,
+                       panelsComplete$ucla_bsb$marker)
+bsbPanels <- with(panelsComplete,
+                  list(jax = subsetPopulation(jax_bsb,
+                                inds = jax_bsb$marker %in% bsbCommon),
+                       ucla = subsetPopulation(ucla_bsb,
+                                inds = ucla_bsb$marker %in% bsbCommon)))
 
 ## the BSB simulations for chromosomes 2, 4, and 18
 ## set up the simulated marker set
