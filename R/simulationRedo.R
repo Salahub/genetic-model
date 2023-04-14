@@ -1,13 +1,13 @@
 ## load functions, set image output directory
-source("simulationFunctions.R")
-imgDir <- "../img/"
+library(simpleGenome)
 
 ## SIMULATIONS #######################################################
 ## start incredibly simple: a single chromosome, markers equidistant
-nchrom <- 1
 nmark <- 20
-dists <- list(c(rep(15,19)))
-mother <- abiogenesis(nchrom, nmark, dists = dists, allele = 1)
+locs <- list(cumsum(rep(15, nmark)))
+alls <- rep(list(c("A","a")), nmark)
+chr <- factor(rep("1", nmark))
+mother <- makeGenome(locs, alls, chr)
 father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
 F1 <- sex(mother, father) # this always gives the same genome
 npop <- 1e5
