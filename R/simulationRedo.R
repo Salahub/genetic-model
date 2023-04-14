@@ -269,7 +269,8 @@ corrImg(quantiles - diag(5000, nrow = 8, ncol = 8),
                                  "firebrick"))(3),
                                         #breaks = seq(0,10000,length.out = 20))
         breaks = c(0, 250, 9750, 10000))
-text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
+text(x = rep(xpos, times = length(chevPos)),
+     y = rep(xpos, each = length(chevPos)),
      labels = round(t(apply(quantiles/10000, 1, rev)), 2))
 
 quantilePal <- colorRampPalette(c("steelblue", "white",
