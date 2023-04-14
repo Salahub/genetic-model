@@ -8,11 +8,13 @@ locs <- list(cumsum(rep(15, nmark)))
 alls <- rep(list(c("A","a")), nmark)
 chr <- factor(rep("1", nmark))
 mother <- makeGenome(locs, alls, chr)
-father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
+father <- makeGenome(locs, alls, chr, markerFuns = markerPureRec)
 F1 <- sex(mother, father) # this always gives the same genome
 npop <- 1e5
-interCross1 <- replicate(npop, sex(F1, F1), simplify = FALSE)
-backCross1 <- replicate(npop, sex(F1, mother), simplify = FALSE)
+interCross1 <- asPopulation(replicate(npop, sex(F1, F1),
+                                      simplify = FALSE))
+backCross1 <- asPopulation(replicate(npop, sex(F1, mother),
+                                     simplify = FALSE))
 interCor1 <- popCorrelation(interCross1)
 backCor1 <- popCorrelation(backCross1)
 corPal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
@@ -29,13 +31,15 @@ corrImg(backCor1, xaxt = "n", yaxt = "n", main = "",
 dev.off() # for output
 
 ## now consider the case where markers are not equidistant
-dists <- list(c(rep(2,5), rep(5,5), rep(10,5),
-                rep(20,4))) # and varied dists
-mother <- abiogenesis(nchrom, nmark, dists = dists, allele = 1)
-father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
+locs <- list(cumsum(c(rep(2,5), rep(5,5), rep(10,5),
+                      rep(20,5)))) # and varied dists
+mother <- makeGenome(locs, alls, chr)
+father <- makeGenome(locs, alls, chr, markerFuns = markerPureRec)
 F1 <- sex(mother, father)
-interCross2 <- replicate(npop, sex(F1, F1), simplify = FALSE)
-backCross2 <- replicate(npop, sex(F1, mother), simplify = FALSE)
+interCross2 <- asPopulation(replicate(npop, sex(F1, F1),
+                                      simplify = FALSE))
+backCross2 <- asPopulation(replicate(npop, sex(F1, mother),
+                                     simplify = FALSE))
 interCor2 <- popCorrelation(interCross2)
 backCor2 <- popCorrelation(backCross2)
 png("inter2.png") # for output
@@ -50,14 +54,16 @@ corrImg(backCor2, xaxt = "n", yaxt = "n", main = "",
 dev.off() # for output
 
 ## now multiple chromosomes, but keep distances constant
-nchrom <- 2
-nmark <- c(8, 12)
-dists <- list(rep(5, 7), rep(15, 11))
-mother <- abiogenesis(nchrom, nmark, dists = dists, allele = 1)
-father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
+loc <- list(cumsum(rep(5, 8)), cumsum(rep(15, 12)))
+chr <- factor(c(rep("1", 8), rep("2", 12)))
+alls <- rep(list(c("A", "a")), 20)
+mother <- makeGenome(loc, alls, chr)
+father <- makeGenome(loc, alls, chr, markerFun = markerPureRec)
 F1 <- sex(mother, father)
-interCross3 <- replicate(npop, sex(F1, F1), simplify = FALSE)
-backCross3 <- replicate(npop, sex(F1, mother), simplify = FALSE)
+interCross3 <- asPopulation(replicate(npop, sex(F1, F1),
+                                      simplify = FALSE))
+backCross3 <- asPopulation(replicate(npop, sex(F1, mother),
+                                     simplify = FALSE))
 interCor3 <- popCorrelation(interCross3)
 backCor3 <- popCorrelation(backCross3)
 png("inter3.png") # for output
