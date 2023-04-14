@@ -83,13 +83,14 @@ dev.off() # for output
 ## insert his particulars
 set.seed(201311) # reproducibility
 npop <- 500
-nchrom <- 1
-nmark <- 16
-dists <- list(rep(6.25, 16))
-mother <- abiogenesis(nchrom, nmark, dists = dists, allele = 1)
-father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
+loc <- list(cumsum(rep(6.25, 17)))
+alls <- rep(list(c("A", "a")), 17)
+chr <- factor(rep("1", 17))
+mother <- makeGenome(loc, alls, chr)
+father <- makeGenome(loc, alls, chr, markerFuns = markerPureRec)
 F1 <- sex(mother, father)
-cheverud <- replicate(npop, sex(F1, F1), simplify = FALSE)
+cheverud <- asPopulation(replicate(npop, sex(F1, F1),
+                                   simplify = FALSE))
 cheverudCor <- popCorrelation(cheverud)
 png("chevSim.png") # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
@@ -98,7 +99,7 @@ corrImg(cheverudCor, axes = FALSE, main = "",
         breaks = seq(-1, 1, length.out = 42))
 dev.off()
 ## theory
-cheverudCorTh <- theoryCor(dists)
+cheverudCorTh <- theoryCorrelation(F1)
 png("chevSimTheory.png") # for output
 par(mar = c(0.5,0.5,0.5,0.5)) # if no title is desired
 corrImg(cheverudCorTh, axes = FALSE, main = "",
@@ -110,33 +111,31 @@ dev.off()
 ## markers placed along each chromosome at 20 cM intervals, backcross
 set.seed(23031) # reproducibility
 npop <- 250
-nchrom <- 12
-nmark <- rep(6, nchrom)
-dists <- lapply(nmark, function(x) rep(20, times = x-1))
-mother <- abiogenesis(nchrom, nmark, dists = dists, allele = 1)
-father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
+chr <- factor(rep(1:20, each = 6))
+alls <- rep(list(c("A","a")), length(chr))
+loc <- lapply(table(chr), function(x) 20*(0:(x-1)))
+mother <- makeGenome(loc, alls, chr)
+father <- makeGenome(loc, alls, chr, markerFuns = markerPureRec)
 F1 <- sex(mother, father)
-landbot <- replicate(npop, sex(F1, mother), simplify = FALSE)
+landbot <- asPopulation(replicate(npop, sex(F1, mother),
+                                  simplify = FALSE))
 landbotCor <- popCorrelation(landbot)
 png("LBSim.png") # for output
 par(mar = c(0.1,0.9,0.9,0.1)) # if no title is desired
 corrImg(landbotCor, axes = FALSE, main = "",
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42))
-addChromosomes(data.frame(chr = rep(1:nchrom, times = nmark)),
-               ord = 1:nchrom)
+addChromosomeLines(F1)
 dev.off()
 ## theory
-landbotCorTh <- theoryCor(dists)
+landbotCorTh <- theoryCorrelation(F1)
 png("LBSimTheory.png") # for output
 par(mar = c(0.1,0.9,0.9,0.1)) # if no title is desired
 corrImg(landbotCorTh, axes = FALSE, yaxt = "n", main = "",
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42))
-addChromosomes(data.frame(chr = rep(1:nchrom, times = nmark)),
-               ord = 1:nchrom)
+addChromosomeLines(F1)
 dev.off()
-
 
 ## Li and Ji 2005: ten independent regions which have equidistant
 ## elements, "LD r^2 = 0.8" (r^2 = (p_AB - p_A*p_B)/
@@ -151,14 +150,15 @@ dev.off()
 ## we get p_r = 1 - sqrt((r^2))
 npop <- 400
 pr <- 1 - sqrt(0.8)
-nchrom <- 10
-nmark <- rep(5, nchrom)
-dists <- lapply(nmark, function(x) rep(invHaldane(pr),
-                                       times = x - 1))
-mother <- abiogenesis(nchrom, nmark, dists = dists, allele = 1)
-father <- abiogenesis(nchrom, nmark, dists = dists, allele = 0)
+chr <- factor(rep(1:10, each = 5))
+alls <- rep(list(c("A", "a")), length(chr))
+loc <- lapply(table(chr), # invert prob to distance
+              function(x) cumsum(rep(invHaldane(pr), times = x)))
+mother <- makeGenome(loc, alls, chr)
+father <- makeGenome(loc, alls, chr, markerFuns = markerPureRec)
 F1 <- sex(mother, father)
-liji <- replicate(npop, sex(F1, F1), simplify = FALSE)
+liji <- asPopulation(replicate(npop, sex(F1, F1),
+                               simplify = FALSE))
 lijiCor <- popCorrelation(liji)
 png(paste(imgDir, "liji.png", sep = "/")) # for output
 par(mar = c(0.1,0.1,0.1,0.1)) # if no title is desired
@@ -170,10 +170,13 @@ dev.off()
 ##' they perform exactly the F2 intercross of mice strains that is
 ##' the basis of these models, this reproduces the results
 chevPos <- c(0, 9.4, 29.5, 41.4, 52.1, 73.3, 115.2, 131.7)
-nmark <- length(chevPos)
-xpos <- seq(0, 1, length.out = nmark)
+xpos <- seq(0, 1, length.out = length(chevPos))
+chr <- factor(rep("1", length(chevPos)))
 chevDists <- outer(chevPos, chevPos,
                    FUN = function(x,y) abs(x-y))
+chevGenome <- makeGenome(list(chevPos),
+                         alleles = rep(list(c("A","a")), length(chr)),
+                         chromosome = chr)
 chevLT <- matrix(c(0.5, 0.82, 0.64, 0.48, 0.32, 0.12, 0.08, 0.02,
                    0, 0.5, 0.65, 0.51, 0.35, 0.12, 0.1, 0.02,
                    0, 0, 0.5, 0.75, 0.57, 0.27, 0.15, 0.06,
@@ -182,9 +185,9 @@ chevLT <- matrix(c(0.5, 0.82, 0.64, 0.48, 0.32, 0.12, 0.08, 0.02,
                    0, 0, 0, 0, 0, 0.5, 0.33, 0.35,
                    0, 0, 0, 0, 0, 0, 0.5, 0.61,
                    0, 0, 0, 0, 0, 0, 0, 0.5),
-                 nrow = nmark)
+                 nrow = length(chr))
 chevCorr <- chevLT + t(chevLT)
-chevCorrTheory <- theoryCorrelation(chevDists)
+chevCorrTheory <- theoryCorrelation(chevGenome)
 chevCorrDiff <- chevCorr - chevCorrTheory
 png("chevCorr.png")
 par(mar = c(0.1, 0.1, 0.1, 0.1))
@@ -193,7 +196,8 @@ corrImg(chevCorr,
         col = colorRampPalette(c("steelblue", "white", "firebrick"))(41),
         breaks = seq(-1, 1, length.out = 42), axes = FALSE,
         main = "", xlab = "",ylab = "")
-text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
+text(x = rep(xpos, times = length(chevPos)),
+     y = rep(xpos, each = length(chevPos)),
      labels = round(t(apply(chevCorr, 1, rev)), 2))
 dev.off()
 ## theoretical output
@@ -204,7 +208,8 @@ corrImg(chevCorrTheory,
         breaks = seq(-1, 1, length.out = 42),
         axes = FALSE, main = "", xlab = "",
         ylab = "")
-text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
+text(x = rep(xpos, times = length(chevPos)),
+     y = rep(xpos, each = length(chevPos)),
      labels = round(t(apply(chevCorrTheory, 1, rev)), 2))
 dev.off()
 ## difference output
@@ -214,17 +219,17 @@ corrImg(chevCorrDiff, xaxt = "n", yaxt = "n", main = "", xlab = "",
         ylab = "", breaks = seq(-0.5, 0.5, length.out = 12),
         col = colorRampPalette(c("steelblue", "white",
                                  "firebrick"))(11))
-text(x = rep(xpos, times = nmark), y = rep(xpos, each = nmark),
+text(x = rep(xpos, times = length(chevPos)),
+     y = rep(xpos, each = length(chevPos)),
      labels = round(t(apply(chevCorrDiff, 1, rev)), 2))
 dev.off()
 
 ## but is this random? perform a lineup test
 truPos <- sample(1:25, 1)
 npop <- 510
-mother <- abiogenesis(1, nmark, dists = list(diff(chevPos)),
-                      allele = 1)
-father <- abiogenesis(1, nmark, dists = list(diff(chevPos)),
-                      allele = 0)
+mother <- with(chevGenome, makeGenome(location, alleles, chromosome))
+father <- with(chevGenome, makeGenome(location, alleles, chromosome,
+                                      markerFun = markerPureRec))
 F1 <- sex(mother, father)
 par(mfrow = c(5,5), mar = c(1, 0.1, 0.1, 0.1))
 for (ii in 1:25) {
@@ -236,7 +241,8 @@ for (ii in 1:25) {
                                          "firebrick"))(11))
         mtext(ii, side = 1, cex = 0.8)
     } else {
-        tempPop <- replicate(npop, sex(F1, F1), simplify = FALSE)
+        tempPop <- asPopulation(replicate(npop, sex(F1, F1),
+                                          simplify = FALSE))
         corrImg(popCorrelation(tempPop) - chevCorrTheory,
                 xaxt = "n", yaxt = "n", main = "", xlab = "",
                 ylab = "", breaks = seq(-0.5, 0.5, length.out = 12),
@@ -249,9 +255,11 @@ for (ii in 1:25) {
 ## alternatively, sample more and colour by quantile
 nsim <- 10000
 simCorrs <- replicate(nsim,
-                      popCorrelation(replicate(npop,
-                                               sex(F1, F1),
-                                               simplify = FALSE)))
+                      popCorrelation(
+                          asPopulation(
+                              replicate(npop,
+                                        sex(F1, F1),
+                                        simplify = FALSE))))
 quants <- apply(simCorrs, c(1,2), quantile, probs = seq(0,1,0.025))
 lessthan <- sapply(1:nsim, function(ii) simCorrs[,,ii] <= chevCorr)
 quantiles <- matrix(apply(lessthan, 1, sum), nrow = 8)
