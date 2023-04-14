@@ -49,7 +49,8 @@ simulateMGICor <- function(panel, npop = length(panel$encodings),
         stop("Setting unknown")
     }
     if (asArray) { # place in an appropriate array
-        tempcor <- array(0, dim = c(ncom, ncom, nsim))
+        nmrk <- length(panel$chromosome)
+        tempcor <- array(0, dim = c(nmrk, nmrk, reps))
         for (ii in seq_along(allcors)) tempcor[,,ii] <- allcors[[ii]]
         allcors <- tempcor # for output
     }
@@ -142,6 +143,7 @@ mnPop <- ceiling(mean(c(length(bsbPanels$jax$encodings),
 bsbSimCor <- simulateMGICor(bsbSubset$jax, reps = nsim, npop = mnPop,
                             setting = "backcross",
                             asArray = TRUE) # simulated crosses
+
 ## get quantiles
 bsb.jaxcorr <- simP.corr[["jax.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
 bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
