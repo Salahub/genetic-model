@@ -145,25 +145,25 @@ bsbSimCor <- simulateMGICor(bsbSubset$jax, reps = nsim, npop = mnPop,
                             asArray = TRUE) # simulated crosses
 
 ## get quantiles
-bsb.jaxcorr <- simP.corr[["jax.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
-bsb.uclacorr <- simP.corr[["ucla.bsb"]][bsb.sub$symbol, bsb.sub$symbol]
-jaxquants <- matrix(rowSums(apply(bsb.cor, 3,
-                                  function(mat) mat <= bsb.jaxcorr)),
-                    ncol = ncom)
-uclaquants <-  matrix(rowSums(apply(bsb.cor, 3,
-                                  function(mat) mat <= bsb.uclacorr)),
-                      ncol = ncom)
+bsbJaxCor <- popCorrelation(bsbSubset$jax)
+bsbUclaCor <- popCorrelation(bsbSubset$ucla)
+jaxQuants <- matrix(rowSums(apply(bsbSimCor, 3,
+                                  function(mat) mat <= bsbJaxCor)),
+                    ncol = length(bsbSubset$jax$chromosome))
+uclaQuants <-  matrix(rowSums(apply(bsbSimCor, 3,
+                                  function(mat) mat <= bsbUclaCor)),
+                      ncol = length(bsbSubset$ucla$chromosome))
 
 ## alternatively: simulate the individual crosses to recombine later
 set.seed(10340504)
-jaxSimCor <- simulateMGI(bsb.sub, nrow(simP.filt[["jax.bsb"]]$data),
-                         chrOrd = c(2,3,1),
-                         reps = nsim, asArray = TRUE)
-uclaSimCor <- simulateMGI(bsb.sub, nrow(simP.filt[["ucla.bsb"]]$data),
-                          chrOrd = c(2,3,1),
-                          reps = nsim, asArray = TRUE)
+jaxSimCor <- simulateMGICor(bsbSubset$jax,
+                            npop = length(bsbSubset$jax$encodings),
+                            reps = nsim, asArray = TRUE)
+uclaSimCor <- simulateMGICor(bsbSubset$ucla,
+                             npop = length(bsbSubset$ucla$encodings),
+                             reps = nsim, asArray = TRUE)
 
-## PLOTTING ##########################################################
+## OTHER INVESTIGATIONS INTO CORRELATON ##############################
 
 ## density helper to zero polygon bases
 zeroDens <- function(dens) {
