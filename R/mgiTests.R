@@ -195,8 +195,8 @@ for (ii in 1:5) { for (jj in seq_along(ntwoSeq)) {
 #png("weakDen.png", width = res, height = res, type = "cairo")
 side <- 5
 ppi <- 150
-png("weakDen.png", width = side, height = side, units = "in", res = ppi,
-    type = "cairo")
+png("weakDen.png", width = side, height = side, units = "in",
+    res = ppi, type = "cairo")
 tempdens <- density(bsb.cor[weakEx[1], weakEx[2], ])
 plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
@@ -205,8 +205,8 @@ dev.off()
 
 ## barplot for weakly related markers
 #png("weakBar.png", width = res, height = res, type = "cairo")
-png("weakBar.png", width = side, height = side, units = "in", res = ppi,
-    type = "cairo")
+png("weakBar.png", width = side, height = side, units = "in",
+    res = ppi, type = "cairo")
 temptab <- table(bsb.cor[weakEx[1], weakEx[2], ])/nsim
 plot(NA, xlim = range(tempdens$x), ylim = range(temptab),
      xlab = "Correlation", ylab = "Proportion")
@@ -219,8 +219,8 @@ dev.off()
 ## strongly related density
 #res <- 480
 #png("strngDen.png", width = res, height = res, type = "cairo")
-png("strngDen.png", width = side, height = side, units = "in", res = ppi,
-    type = "cairo")
+png("strngDen.png", width = side, height = side, units = "in",
+    res = ppi, type = "cairo")
 tempdens <- zeroDens(density(bsb.cor[strngEx[1], strngEx[2], ]))
 plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
      xlab = "Correlation", ylab = "Density")
@@ -229,8 +229,8 @@ dev.off()
 
 ## strongly related barplot
 #png("strngBar.png", width = res, height = res, type = "cairo")
-png("strngBarLndscp.png", width = side, height = 0.8*side, units = "in", res = ppi,
-    type = "cairo")
+png("strngBarLndscp.png", width = side, height = 0.8*side,
+    units = "in", res = ppi, type = "cairo")
 temptab <- table(bsb.cor[strngEx[1], strngEx[2], ])/nsim
 plot(NA, xlim = range(as.numeric(names(temptab)[-length(temptab)])),
      ylim = range(temptab[-length(temptab)]),
@@ -248,9 +248,10 @@ dev.off()
 
 ## focused view on one recombinant individual
 #png("strngBarClose.png", width = res, height = res, type = "cairo")
-png("strngBarClose.png", width = side, height = side, units = "in", res = ppi,
-    type = "cairo")
-pal <- colorRampPalette(c("steelblue", "gray50", "firebrick"))(length(ntwoSeq))
+png("strngBarClose.png", width = side, height = side, units = "in",
+    res = ppi, type = "cairo")
+pal <- colorRampPalette(c("steelblue", "gray50",
+                          "firebrick"))(length(ntwoSeq))
 plot(NA, xlim = c(0.968, 0.976), ylim = c(0,0.07),
      xlab = "Correlation", ylab = "Proportion")
 for (ii in seq_along(ntwoSeq)) {
@@ -277,8 +278,8 @@ pal <- colorRampPalette(c("black", "firebrick"))(length(nCross))
 
 ## plot the above
 #png("crossCurves.png", width = 540, height = 540, type = "cairo")
-png("crossCurves.png", width = side, height = side, units = "in", res = ppi,
-    type = "cairo")
+png("crossCurves.png", width = side, height = side, units = "in",
+    res = ppi, type = "cairo")
 plot(NA, xlim = range(ntwoSeq),
      ylim = range(c(xThry, 1.03), na.rm = TRUE),
      xlab = "Mean score", ylab = "Correlation", xaxt = "n")
@@ -303,8 +304,8 @@ for (ii in seq_along(nCross)) {
 
 ## all together
 #png("jaxcrossCurves.png", width = 540, height = 540, type = "cairo")
-png("jaxcrossCurves.png", width = side, height = side, units = "in", res = ppi,
-    type = "cairo")
+png("jaxcrossCurves.png", width = side, height = side,
+    units = "in", res = ppi, type = "cairo")
 plot(NA, xlim = range(ntwoSeq),
      ylim = range(c(xThry, 1.03), na.rm = TRUE),
      xlab = "Mean score", ylab = "Correlation", xaxt = "n")
