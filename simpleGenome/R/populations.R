@@ -66,7 +66,7 @@ subsetPopulation <- function(population,
 selectGenome <- function(population, ind = 1) {
     enc <- population$encodings[[ind]]
     rownames(enc) <- population$marker
-    structure(list(encoding = enc
+    structure(list(encoding = enc,
                    chromosome = population$chromosome,
                    alleles = population$alleles,
                    location = population$location),
