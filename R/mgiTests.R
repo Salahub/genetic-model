@@ -104,6 +104,11 @@ corCross <- function(x, ntwo, npop = 80) {
     suppressWarnings(cor(refMrk, xMrk)) # avoid NaN warnings
 }
 
+
+## CONSTANTS #########################################################
+nsim <- 10000 # number of simulated crosses
+pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
+
 ## FILTERING AND DISPLAYING A SUBSET #################################
 
 ## load in the pre-processed panels, focusing on a few with large
@@ -188,8 +193,6 @@ bsbPanels <- with(panelsComplete,
 ## set up the simulated marker set
 bsbSubset <- lapply(bsbPanels, subsetPopulation,
                     markInd = bsbPanels$jax$chromosome %in% c("2","4","18"))
-nsim <- 10000 # number of simulated crosses
-pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 ## theoretical correlation
 bsbSubTheory <- theoryCorrelation(bsbSubset$jax, setting = "backcross")
 
