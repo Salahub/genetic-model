@@ -224,6 +224,7 @@ plot.genome <- function(genome, chrLens, epch = c(1,2,6,0),
     } else {
         pos <- genome$location
         xlab = "Location"
+    }
     ht <- seq(0, 1, length.out = length(pos)) # heights
     encInds <- c(0, cumsum(table(genome$chr)))
     encLevs <- factor(paste(genome$encoding[,1], genome$encoding[,2]),

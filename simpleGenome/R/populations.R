@@ -43,8 +43,8 @@ asPopulation <- function(genomes) {
 ##' only the markers of inds
 ##' @author Chris Salahub
 subsetPopulation <- function(population,
-                             markInd = 1:length(population$chromosome),
-                             genInd = 1:length(population$encoding)) {
+                             markInd = (1:length(population$chromosome)),
+                             genInd = (1:length(population$encoding))) {
     newchr <- droplevels(population$chromosome[markInd])# subset chroms
     newloc <- split(unlist(population$location,
                            use.names = FALSE)[markInd], newchr)
