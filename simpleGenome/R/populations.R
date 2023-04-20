@@ -57,6 +57,22 @@ subsetPopulation <- function(population,
               class = "population")
 }
 
+##' @title Selecting a genome from a population
+##' @param population object to be subset by markers
+##' @param ind index of encoding to extract
+##' @return a genome object with the encoding of the individual at
+##' ind in the population
+##' @author Chris Salahub
+selectGenome <- function(population, ind = 1) {
+    enc <- population$encodings[[ind]]
+    rownames(enc) <- population$marker
+    structure(list(encoding = enc
+                   chromosome = population$chromosome,
+                   alleles = population$alleles,
+                   location = population$location),
+              class = "genome")
+}
+
 ##' @title Dropping encodings based on a rule
 ##' @param population population with encodings to be filtered
 ##' @param rule function to apply to each encoding that returns a
