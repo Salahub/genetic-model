@@ -194,3 +194,14 @@ addChromosomeLines <- function(genome, borders = FALSE,
         }
     }
 }
+
+##' @title Print method for a population object
+##' @param population instance of the population class
+##' @return nothing, but print a quick summary of the genome to
+##' console
+##' @author Chris Salahub
+print.population <- function(population) {
+    cat("A population of", length(population$encoding), "genomes",
+        "measured at markers across", length(population$location),
+        "chromosomes, distributed:\n", table(genome$chromosome), "\n")
+}
