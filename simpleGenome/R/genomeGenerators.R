@@ -25,7 +25,7 @@ generateEncoding <- function(nmark,
     if (!is.list(markerFuns)) {
         enc <- mapply(markerFuns, n = nmark, SIMPLIFY = FALSE)
     } else {
-        enc <- mapply(do.call, markerFuns, as.list(nmark),
+        enc <- mapply(do.call, markerFuns, lapply(nmark, as.list),
                       SIMPLIFY = FALSE)
     }
     do.call(rbind, enc)
@@ -43,13 +43,7 @@ markerPureRec <- function(n) {
     cbind(mv = rep(0, n), pv = rep(0, n))
 }
 markerHybrid <- function(n) {
-    cbind(mv = rep(1, n), pv = rep(0, n))
-}
-markerIntercross <- function(n) {
-    cbind(mv = rep(1, n), pv = rep(2, n))[,sample(1:2, 2)]
-}
-markerBackcross <- function(n) {
-    cbind(mv = rep(1, n), pv = rep(sample(1:2, 1), n))
+    cbind(mv = rep(1, n), pv = rep(0, n))[,sample(1:2, 2)]
 }
 markerRandom <- function(n){
     cbind(mv = sample(c(1,0), size = n, replace = TRUE),

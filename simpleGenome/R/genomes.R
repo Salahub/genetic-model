@@ -17,9 +17,9 @@ simGenome <- function(nmark, alleles, markerFuns = markerHybrid,
                       locFuns = locationRegular) {
     ## check marker names and generate a chromosome indicator
     if (is.null(names(nmark))) {
-        chr <- factor(rep(1:length(nmark), each = nmark))
+        chr <- factor(rep(1:length(nmark), times = nmark))
     } else {
-        chr <- factor(rep(names(nmark), each = nmark),
+        chr <- factor(rep(names(nmark), times = nmark),
                       levels = names(nmark))
     }
     ## generate alleles if necessary
@@ -184,4 +184,56 @@ asGenome <- function(df, alleles, values = c(1,0),
                    location = split(df$pos, df$chr))
     class(genome) <- "genome"
     genome
+}
+
+##' @title Print method for a genome object
+##' @param genome instance of the genome class
+##' @return nothing, but print a quick summary of the genome to
+##' console
+##' @author Chris Salahub
+print.genome <- function(genome) {
+    cat("A genome object encoding", length(genome$chromosome),
+        "markers across", length(genome$location), "chromosomes,",
+        "distributed:\n", table(genome$chromosome), "\n")
+}
+
+
+##' @title Plot method for a genome object
+##' @param genome instance of the genome class
+##' @param chrLens (optional) maximal lengths of each chromosome
+##' @param scale (optional) if chrLens is provided, should the
+##' locations be scaled to 0,1?
+##' @param epch (optional) vector of encoding pch values for the
+##' potential encoding combinations
+##' @param elev (optional) vector of possible encodings when the
+##' columns of the encoding matrix are pasted together, defaults to
+##' "0 0", "0 1", "1 0", "1 1"
+##' @return nothing, but represents measured markers and their
+##' locations on a series of lines representing chromosomes
+##' @author Chris Salahub
+plot.genome <- function(genome, chrLens, epch = c(1,2,6,0),
+                        elevs = c("0 0", "0 1", "1 0", "1 1"),
+                        scale = FALSE, ...) {
+    if (missing(chrLens)) { # take largest location as max length
+        chrLens <- sapply(genome$location, max)
+    }
+    if (scale) {
+        pos <- mapply(function(locs, mx) locs/max,
+                      genome$location, chrLens, SIMPLIFY = FALSE)
+        xlab <- "Relative location"
+    } else {
+        pos <- genome$location
+        xlab = "Location"
+    ht <- seq(0, 1, length.out = length(pos)) # heights
+    encInds <- c(0, cumsum(table(genome$chr)))
+    encLevs <- factor(paste(genome$encoding[,1], genome$encoding[,2]),
+                      levels = elevs)
+    plot(NA, xlim = c(0, max(chrLens)), ylim = range(ht), yaxt = "n",
+         xlab = xlab, ylab = "Chromosome", ...)
+    axis(2, at = ht, labels = levels(genome$chr))
+    for (ii in seq_along(pos)) {
+        lines(x = c(0, chrLens[ii]), y = c(ht[ii], ht[ii]))
+        points(x = pos[[ii]], y = rep(ht[ii], length(pos[[ii]])),
+               pch = epch[unclass(encLevs[(encInds[ii]+1):(encInds[ii+1])])])
+    }
 }

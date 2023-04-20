@@ -37,19 +37,21 @@ asPopulation <- function(genomes) {
 
 ##' @title Subsetting populations by markers
 ##' @param population object to be subset by markers
-##' @param inds indices of markers to keep
+##' @param markInd indices of markers to keep
+##' @param genInd indices of individuals to keep
 ##' @return a population object with all encoding matrices subset to
 ##' only the markers of inds
 ##' @author Chris Salahub
-subsetPopulation <- function(population, inds) {
-    newchr <- population$chromosome[inds] # subset chromosomes
+subsetPopulation <- function(population, markInd,
+                             genInd = 1:length(population$encoding)) {
+    newchr <- droplevels(population$chromosome[markInd])# subset chroms
     newloc <- split(unlist(population$location,
                            use.names = FALSE)[inds], newchr)
-    structure(list(encodings = lapply(population$encodings,
-                                      function(enc) enc[inds,]),
+    structure(list(encodings = lapply(population$encodings[genInd],
+                                      function(enc) enc[markInd,]),
                    chromosome = newchr,
-                   marker = population$marker[inds],
-                   alleles = population$alleles[inds],
+                   marker = population$marker[markInd],
+                   alleles = population$alleles[markInd],
                    location = newloc),
               class = "population")
 }
