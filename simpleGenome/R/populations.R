@@ -203,5 +203,6 @@ addChromosomeLines <- function(genome, borders = FALSE,
 print.population <- function(population) {
     cat("A population of", length(population$encoding), "genomes",
         "measured at markers across", length(population$location),
-        "chromosomes, distributed:\n", table(genome$chromosome), "\n")
+        "chromosomes, distributed:\n", table(population$chromosome),
+        "\n")
 }
