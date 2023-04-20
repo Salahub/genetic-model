@@ -42,11 +42,12 @@ asPopulation <- function(genomes) {
 ##' @return a population object with all encoding matrices subset to
 ##' only the markers of inds
 ##' @author Chris Salahub
-subsetPopulation <- function(population, markInd,
+subsetPopulation <- function(population,
+                             markInd = 1:length(population$chromosome),
                              genInd = 1:length(population$encoding)) {
     newchr <- droplevels(population$chromosome[markInd])# subset chroms
     newloc <- split(unlist(population$location,
-                           use.names = FALSE)[inds], newchr)
+                           use.names = FALSE)[markInd], newchr)
     structure(list(encodings = lapply(population$encodings[genInd],
                                       function(enc) enc[markInd,]),
                    chromosome = newchr,
