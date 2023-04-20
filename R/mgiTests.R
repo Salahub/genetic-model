@@ -15,7 +15,7 @@ mgiDropBadMarker <- function(panel, prop = 0) {
                  function(row) {
                      sum(is.na(row))/(2*length(panel$encodings)) > prop
                  })
-    subsetPopulation(panel, inds = !bad)
+    subsetPopulation(panel, markInd = !bad)
 }
 
 ## simulate panel correlation based on its setting and cM distances
@@ -180,14 +180,14 @@ bsbCommon <- intersect(panelsComplete$jax_bsb$marker,
                        panelsComplete$ucla_bsb$marker)
 bsbPanels <- with(panelsComplete,
                   list(jax = subsetPopulation(jax_bsb,
-                                inds = jax_bsb$marker %in% bsbCommon),
+                                markInd = jax_bsb$marker %in% bsbCommon),
                        ucla = subsetPopulation(ucla_bsb,
-                                inds = ucla_bsb$marker %in% bsbCommon)))
+                                markInd = ucla_bsb$marker %in% bsbCommon)))
 
 ## perform simulations for chromosomes 2, 4, and 18
 ## set up the simulated marker set
 bsbSubset <- lapply(bsbPanels, subsetPopulation,
-                    inds = bsbPanels$jax$chromosome %in% c("2","4","18"))
+                    markInd = bsbPanels$jax$chromosome %in% c("2","4","18"))
 nsim <- 10000 # number of simulated crosses
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 ## theoretical correlation
