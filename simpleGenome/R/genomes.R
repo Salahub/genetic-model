@@ -197,7 +197,6 @@ print.genome <- function(genome) {
         "distributed:\n", table(genome$chromosome), "\n")
 }
 
-
 ##' @title Plot method for a genome object
 ##' @param genome instance of the genome class
 ##' @param chrLens (optional) maximal lengths of each chromosome
