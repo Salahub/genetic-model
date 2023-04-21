@@ -207,12 +207,14 @@ print.genome <- function(genome) {
 ##' @param elev (optional) vector of possible encodings when the
 ##' columns of the encoding matrix are pasted together, defaults to
 ##' "0 0", "0 1", "1 0", "1 1"
+##' @param add.legend if TRUE, draw a legend in the top right corner,
+##' if FALSE suppress legend
 ##' @return nothing, but represents measured markers and their
 ##' locations on a series of lines representing chromosomes
 ##' @author Chris Salahub
 plot.genome <- function(genome, chrLens, epch = c(1,2,6,0),
                         elevs = c("0 0", "0 1", "1 0", "1 1"),
-                        scale = FALSE, ...) {
+                        scale = FALSE, add.legend = FALSE, ...) {
     if (missing(chrLens)) { # take largest location as max length
         chrLens <- sapply(genome$location, max)
     }
@@ -225,15 +227,19 @@ plot.genome <- function(genome, chrLens, epch = c(1,2,6,0),
         xlab = "Location"
     }
     ht <- seq(0, 1, length.out = length(pos)) # heights
-    encInds <- c(0, cumsum(table(genome$chr)))
-    encLevs <- factor(paste(genome$encoding[,1], genome$encoding[,2]),
-                      levels = elevs)
+    encInds <- c(0, cumsum(table(genome$chr))) # encodind rows
+    encFac <- factor(paste(genome$encoding[,1], genome$encoding[,2]),
+                     levels = elevs) # encoding factor
     plot(NA, xlim = c(0, max(chrLens)), ylim = range(ht), yaxt = "n",
-         xlab = xlab, ylab = "Chromosome", ...)
-    axis(2, at = ht, labels = levels(genome$chr))
-    for (ii in seq_along(pos)) {
+         xlab = xlab, ylab = "Chromosome", ...) # plot area
+    axis(2, at = ht, labels = levels(genome$chr)) # custom y axis
+    for (ii in seq_along(pos)) { # add chromosome lines
         lines(x = c(0, chrLens[ii]), y = c(ht[ii], ht[ii]))
         points(x = pos[[ii]], y = rep(ht[ii], length(pos[[ii]])),
-               pch = epch[unclass(encLevs[(encInds[ii]+1):(encInds[ii+1])])])
+               pch = epch[unclass(encFac[(encInds[ii]+1):(encInds[ii+1])])])
+    }
+    if (add.legend) {
+        legend(x = "topright", legend = elevs, pch = epch,
+               title = "Encoding")
     }
 }
