@@ -1,7 +1,7 @@
 ## define the marker distribution by chromosome, each element gives
 ## the count of markers on the corresponding chromosome given by its
 ## name
-markerDist <- c("1" = 5, "2" = 10, "3" = 7, "X" = 8)
+markerDist <- c("1" = 5, "2" = 10, "3" = 7, "X" = 5)
 ## construct a genome based on this distribution
 g <- simGenome(markerDist)
 g # simple print method
