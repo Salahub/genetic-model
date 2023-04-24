@@ -56,6 +56,9 @@ makeGenome <- function(location, alleles, chromosome,
     if (nrow(encoding) != length(chromosome)) {
         stop("Encoding does not match structure of chromosome, location")
     }
+    if (ncol(encoding) != 2) {
+        stop("Encoding must have two columns")
+    }
     if (!is.factor(chromosome)) {
         warning("Warning: chromosome is not an ordered factor")
         chromosome <- factor(chromosome, levels = unique(chromosome))

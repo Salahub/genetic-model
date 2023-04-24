@@ -49,10 +49,10 @@ meiose <- function(genome, probs = NULL, crossFun = crossIndep,
                         function(vec) matrix(vec, ncol = 2))
     dists <- lapply(genome$location, diff)
     ## write a helper to drift a single chromosome
-    chromDrift <- function(copies, probs) {
+    chromDrift <- function(copies, probs, locs) {
         copy1 <- copies[,1]
         copy2 <- copies[,2]
-        crossovers <- crossFun(probs, genome$location)
+        crossovers <- crossFun(probs, locs)
         for (ii in seq_along(crossovers)) {
             crossPos <- crossovers[ii]
             inter <- copy2[1:crossPos]
@@ -64,7 +64,7 @@ meiose <- function(genome, probs = NULL, crossFun = crossIndep,
     ## get probabilities
     if (is.null(probs)) probs <- lapply(dists, map)
     ## take the above and apply it across the genome
-    drifted <- Map(chromDrift, encodings, probs)
+    drifted <- Map(chromDrift, encodings, probs, genome$location)
     drifted
 }
 
