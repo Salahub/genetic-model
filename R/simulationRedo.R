@@ -1,5 +1,5 @@
 ## load functions, set image output directory
-library(simpleGenome)
+library(empiricalGenome)
 
 ## SIMULATIONS #######################################################
 ## start incredibly simple: a single chromosome, markers equidistant
@@ -7,8 +7,8 @@ nmark <- 20
 locs <- list(cumsum(rep(15, nmark)))
 alls <- rep(list(c("A","a")), nmark)
 chr <- factor(rep("1", nmark))
-mother <- makeGenome(locs, alls, chr)
-father <- makeGenome(locs, alls, chr, markerFuns = markerPureRec)
+mother <- makeGenome(locs, alls, chr, markerPureDom(nmark))
+father <- makeGenome(locs, alls, chr, markerPureRec(nmark))
 F1 <- sex(mother, father) # this always gives the same genome
 npop <- 1e5
 interCross1 <- asPopulation(replicate(npop, sex(F1, F1),
@@ -33,8 +33,10 @@ dev.off() # for output
 ## now consider the case where markers are not equidistant
 locs <- list(cumsum(c(rep(2,5), rep(5,5), rep(10,5),
                       rep(20,5)))) # and varied dists
-mother <- makeGenome(locs, alls, chr)
-father <- makeGenome(locs, alls, chr, markerFuns = markerPureRec)
+mother <- makeGenome(locs, alls, chr,
+                     markerPureDom(sum(sapply(locs, length))))
+father <- makeGenome(locs, alls, chr,
+                     markerPureRec(sum(sapply(locs, length))))
 F1 <- sex(mother, father)
 interCross2 <- asPopulation(replicate(npop, sex(F1, F1),
                                       simplify = FALSE))
@@ -57,8 +59,8 @@ dev.off() # for output
 loc <- list(cumsum(rep(5, 8)), cumsum(rep(15, 12)))
 chr <- factor(c(rep("1", 8), rep("2", 12)))
 alls <- rep(list(c("A", "a")), 20)
-mother <- makeGenome(loc, alls, chr)
-father <- makeGenome(loc, alls, chr, markerFun = markerPureRec)
+mother <- makeGenome(loc, alls, chr, markerPureDom(length(chr)))
+father <- makeGenome(loc, alls, chr, markerPureRec(length(chr)))
 F1 <- sex(mother, father)
 interCross3 <- asPopulation(replicate(npop, sex(F1, F1),
                                       simplify = FALSE))
@@ -86,8 +88,8 @@ npop <- 500
 loc <- list(cumsum(rep(6.25, 17)))
 alls <- rep(list(c("A", "a")), 17)
 chr <- factor(rep("1", 17))
-mother <- makeGenome(loc, alls, chr)
-father <- makeGenome(loc, alls, chr, markerFuns = markerPureRec)
+mother <- makeGenome(loc, alls, chr, markerPureDom(length(chr)))
+father <- makeGenome(loc, alls, chr, markerPureRec(length(chr)))
 F1 <- sex(mother, father)
 cheverud <- asPopulation(replicate(npop, sex(F1, F1),
                                    simplify = FALSE))
@@ -114,8 +116,8 @@ npop <- 250
 chr <- factor(rep(1:20, each = 6))
 alls <- rep(list(c("A","a")), length(chr))
 loc <- lapply(table(chr), function(x) 20*(0:(x-1)))
-mother <- makeGenome(loc, alls, chr)
-father <- makeGenome(loc, alls, chr, markerFuns = markerPureRec)
+mother <- makeGenome(loc, alls, chr, markerPureDom(length(chr)))
+father <- makeGenome(loc, alls, chr, markerPureRec(length(chr)))
 F1 <- sex(mother, father)
 landbot <- asPopulation(replicate(npop, sex(F1, mother),
                                   simplify = FALSE))
@@ -154,8 +156,8 @@ chr <- factor(rep(1:10, each = 5))
 alls <- rep(list(c("A", "a")), length(chr))
 loc <- lapply(table(chr), # invert prob to distance
               function(x) cumsum(rep(invHaldane(pr), times = x)))
-mother <- makeGenome(loc, alls, chr)
-father <- makeGenome(loc, alls, chr, markerFuns = markerPureRec)
+mother <- makeGenome(loc, alls, chr, markerPureDom(length(chr)))
+father <- makeGenome(loc, alls, chr, markerPureRec(length(chr)))
 F1 <- sex(mother, father)
 liji <- asPopulation(replicate(npop, sex(F1, F1),
                                simplify = FALSE))
@@ -176,7 +178,8 @@ chevDists <- outer(chevPos, chevPos,
                    FUN = function(x,y) abs(x-y))
 chevGenome <- makeGenome(list(chevPos),
                          alleles = rep(list(c("A","a")), length(chr)),
-                         chromosome = chr)
+                         chromosome = chr,
+                         markerPureDom(length(chr)))
 chevLT <- matrix(c(0.5, 0.82, 0.64, 0.48, 0.32, 0.12, 0.08, 0.02,
                    0, 0.5, 0.65, 0.51, 0.35, 0.12, 0.1, 0.02,
                    0, 0, 0.5, 0.75, 0.57, 0.27, 0.15, 0.06,
@@ -227,9 +230,12 @@ dev.off()
 ## but is this random? perform a lineup test
 truPos <- sample(1:25, 1)
 npop <- 510
-mother <- with(chevGenome, makeGenome(location, alleles, chromosome))
-father <- with(chevGenome, makeGenome(location, alleles, chromosome,
-                                      markerFun = markerPureRec))
+mother <- with(chevGenome,
+               makeGenome(location, alleles, chromosome,
+                          markerPureDom(length(chromosome))))
+father <- with(chevGenome,
+               makeGenome(location, alleles, chromosome,
+                          markerPureRec(length(chromosome))))
 F1 <- sex(mother, father)
 par(mfrow = c(5,5), mar = c(1, 0.1, 0.1, 0.1))
 for (ii in 1:25) {

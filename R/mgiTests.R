@@ -1,5 +1,5 @@
 ## load package with data, genome functions
-library(simpleGenome)
+library(empiricalGenome)
 
 ## FUNCTIONS TO ANALYZE, SIMULATE MGI PANELS #########################
 ## drop bad panelists
@@ -25,9 +25,9 @@ simulateMGICor <- function(panel, npop = length(panel$encodings),
                            asArray = FALSE) {
     setting <- match.arg(setting) # identify case
     M <- with(panel, makeGenome(location, alleles, chromosome,
-                                markerFun = markerPureDom))
+                                markerPureDom(length(chromosome)))
     F <- with(panel, makeGenome(location, alleles, chromosome,
-                                markerFun = markerPureRec))
+                                markerPureRec(length(chromosome)))
     F1 <- do.call(sex, args = c(genome1 = list(M), genome2 = list(F),
                                 meioseArgs))
     allcors <- vector("list", reps)

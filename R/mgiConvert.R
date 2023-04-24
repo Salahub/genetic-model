@@ -1,5 +1,5 @@
 ## load functions, set image output directory
-library(simpleGenome)
+library(empiricalGenome)
 
 ## FUNCTIONS TO LOAD, PROCESS MGI DATA ###############################
 mgiUrl <- "https://www.informatics.jax.org/downloads/reports/"
