@@ -52,7 +52,8 @@ simGenome <- function(nmark, alleles, markerFuns = markerHybrid,
 
 ##' @title Making a genome from provided slots
 ##' @description `makeGenome` checks arguments for conformity and
-##' then stores them in a `genome` object.
+##' then stores them in a `genome` object. `genome` is an S3 class
+##' representing the encoding matrix of a diploid genome.
 ##' @details A simple constructor that checks arguments and provides
 ##' descriptive errors to ensure a valid genome is constructed.
 ##' @param location list of marker locations by chromosome
@@ -108,9 +109,12 @@ subsetGenome <- function(genome, inds) {
 }
 
 ##' @title Checking if an object is a valid genome
+##' @details Performs checks of slot data types, dimensions, and
+##' conformity to ensure `genome` is a valid instance of the S3 class
+##' `genome`.
 ##' @param genome object to be checked
 ##' @return TRUE if the object is a genome, otherwise text outlining
-##' what failed
+##' what check failed.
 ##' @author Chris Salahub
 checkGenome <- function(genome) {
     isgen <- TRUE # change if false
@@ -141,30 +145,38 @@ checkGenome <- function(genome) {
     isgen
 }
 
-##' @title Simple encoding functions
+##' @title Simple encoding function
+##' @details This function takes observed annotations, a vector of
+##' possible annotations, and a vector of values for each, and returns
+##' an encoding given by replacing annotations with values.
 ##' @param annotation character vector giving observed annotations
 ##' @param alleles character vector of possible annotations
 ##' @param values numeric vector of the same length as alleles giving
 ##' the value of each allele when encoded
-##' @return numeric vector of encodings
+##' @return A numeric vector of encodings.
 ##' @author Chris Salahub
 encode <- function(annotation, alleles, values) {
     names(values) <- alleles
     values[annotation]
 }
 
-##' @title Convert a data.frame to a genome object
-##' @param df data.frame with columns "mv", "pv", "chr", and "pos"
-##' @param alleles list with the same length as df that gives the
-##' potential alleles for each row
-##' @param values list of identical form to alleles giving numeric
+##' @title Convert a `data.frame` to a `genome`
+##' @details Given a `data.frame` with annotations in a particular
+##' structure, potentially with missing annotations denoted by a set
+##' list of characters, this function generates the corresponding
+##' `genome` by encoding the data and changing its format.
+##' @param df `data.frame` with columns `mv`, `pv`, `chr`, and `pos`
+##' @param alleles list with `length(alleles) == nrow(df)` that
+##' gives the potential alleles for each row
+##' @param values list of identical form to `alleles` giving numeric
 ##' values for the encoding of each possible allele
-##' @param missing string values to be interpreted as missing values
+##' @param missing character vector giving string values to be
+##' interpreted as missing
 ##' @param encoder function which accepts an annotation and its
 ##' possible values and returns an encoding
-##' @return a genome object wit locations given by  pos across
-##' chromosomes given by chr with encodings given by the values in mv
-##' and pv
+##' @return A `genome` with locations given by `pos` across
+##' chromosomes given by `chr` with encodings given by the values in
+##' `mv` and `pv`
 ##' @author Chris Salahub
 asGenome <- function(df, alleles, values = c(1,0),
                      missing = c(".", "-"), encoder = encode) {
@@ -213,32 +225,46 @@ asGenome <- function(df, alleles, values = c(1,0),
     genome
 }
 
-##' @title Print method for a genome object
+##' Methods
+##' @title S3 methods for `genome`
+##' @description The `print` and `plot` methods outlined here support
+##' the quick description and exploration of a `genome`.
+##' @details These methods for printing and plotting genome objects
+##' are helpful to get a quick overview of the encoding contained in
+##' a genome and the structure of the locations encoded.
 ##' @param genome instance of the genome class
-##' @return nothing, but print a quick summary of the genome to
-##' console
-##' @author Chris Salahub
-print.genome <- function(genome) {
-    cat("A genome object encoding", length(genome$chromosome),
-        "markers across", length(genome$location), "chromosomes,",
-        "distributed:\n", table(genome$chromosome), "\n")
-}
-
-##' @title Plot method for a genome object
-##' @param genome instance of the genome class
-##' @param chrLens (optional) maximal lengths of each chromosome
-##' @param scale (optional) if chrLens is provided, should the
-##' locations be scaled to 0,1?
-##' @param epch (optional) vector of encoding pch values for the
-##' potential encoding combinations
-##' @param elev (optional) vector of possible encodings when the
-##' columns of the encoding matrix are pasted together, defaults to
+##' @param chrLens numeric vector of lengths of each chromosome, if
+##' missing taken as the largest location on each chromosome
+##' @param scale logical: if chrLens is provided, should the locations
+##' be scaled to [0,1] when plotted?
+##' @param epch vector of R pch values for the potential encoding
+##' combinations
+##' @param elev vector of possible encodings generated by pasting
+##' the two columns of the encoding matrix together, defaults to
 ##' "0 0", "0 1", "1 0", "1 1"
 ##' @param add.legend if TRUE, draw a legend in the top right corner,
 ##' if FALSE suppress legend
-##' @return nothing, but represents measured markers and their
-##' locations on a series of lines representing chromosomes
+##' @return Nothing is returned, but a quick summary of the genome is
+##' printed to console or a visualization of the genome is plotted
+##' on the active device.
 ##' @author Chris Salahub
+##' @describeIn methods Print method for `genome`
+print.genome <- function(genome) {
+    nm <- length(genome$chromosome)
+    nc <- length(genome$location)
+    dtab <- table(genome$chromosome)
+    mis <- 100*round(sum(is.na(genome$encoding))/ # missing data?
+                     length(genome$encoding), 2)
+    if (mis > 0) {
+        cat("A genome object encoding", nm, "markers across", nc,
+            "chromosomes, distributed:\n", dtab, ".\nRoughly",
+            mis, "% of the data is missing.")
+    } else {
+        cat("A genome object encoding", nm, "markers across", nc,
+            "chromosomes, distributed:\n", dtab)
+    }
+}
+##' @describeIn methods Plot method for `genome`
 plot.genome <- function(genome, chrLens, epch = c(1,2,6,0),
                         elevs = c("0 0", "0 1", "1 0", "1 1"),
                         scale = FALSE, add.legend = FALSE, ...) {

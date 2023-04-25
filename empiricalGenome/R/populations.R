@@ -1,10 +1,14 @@
 ### Functions to Compute Correlation for a Population of Genomes #####
 
 ##' @title Create a population object
-##' @param genomes list of genomes measured at the same locations
-##' @return a population object with the same slots as a genome object
-##' but where encoding is a list of encodings for all entries and a
-##' slot giving marker names is added
+##' @details Provided a list of `genome`s, this function strips
+##' redundant information from the genomes to convert them to a
+##' `population`, which has the same slots as `genome` except that
+##' `encoding` is now `encodings` to reflect that it is a list of
+##' encoding matrices and `marker` is added to remove redundant row
+##' names.
+##' @param genomes list of `genome`s with the same locations
+##' @return A population object.
 ##' @author Chris Salahub
 asPopulation <- function(genomes) {
     ## perform structural check that all measure the same spots
@@ -36,11 +40,15 @@ asPopulation <- function(genomes) {
 }
 
 ##' @title Subsetting populations by markers
-##' @param population object to be subset by markers
+##' @details Like the `genome` analog, this subsets markers, drops
+##' unused chromosomes, and returns a new population object. Unlike
+##' the single `genome` case, this includes a second argument to
+##' drop individual genomes from the population.
+##' @param population `population` to be subset by markers
 ##' @param markInd indices of markers to keep
 ##' @param genInd indices of individuals to keep
-##' @return a population object with all encoding matrices subset to
-##' only the markers of inds
+##' @return A population object including only the encoding matrices
+##' of `genInd` subset to the markers of `markInd`.
 ##' @author Chris Salahub
 subsetPopulation <- function(population,
                              markInd = (1:length(population$chromosome)),
@@ -58,10 +66,13 @@ subsetPopulation <- function(population,
 }
 
 ##' @title Selecting a genome from a population
-##' @param population object to be subset by markers
-##' @param ind index of encoding to extract
-##' @return a genome object with the encoding of the individual at
-##' ind in the population
+##' @details This function takes an individual encoding from a
+##' population and converts it back to a `genome` object for
+##' plotting and manipulation.
+##' @param population `population` to be subset by markers
+##' @param ind index of individual encoding to extract
+##' @return A `genome` with the encoding of the individual at
+##' `ind` in `population`.
 ##' @author Chris Salahub
 selectGenome <- function(population, ind = 1) {
     enc <- population$encodings[[ind]]
@@ -73,12 +84,15 @@ selectGenome <- function(population, ind = 1) {
               class = "genome")
 }
 
-##' @title Dropping encodings based on a rule
-##' @param population population with encodings to be filtered
+##' @title Remove encodings from a `population` based on a rule
+##' @details A simple wrapper function which applies a function that
+##' accepts an encoding matrix and returns a logical to every encoding
+##' in a `population` and keeps only those which return `TRUE`
+##' @param population `population` with encodings to be filtered
 ##' @param rule function to apply to each encoding that returns a
 ##' boolean, defaults to checking if any values are NA
-##' @return a population with only those encodings for which rule
-##' returns TRUE
+##' @return A population with only those encodings for which rule
+##' returns `TRUE`
 ##' @author Chris Salahub
 filterPopulation <- function(population,
                              rule = function(mat) any(is.na(mat))) {
@@ -91,42 +105,63 @@ filterPopulation <- function(population,
               class = "population")
 }
 
-##' @title Functions for scoring genomes
-##' @param encoding matrix with two columns giving the encoding of its
-##' markers to be summarixed into a vector of scores
-##' @return numeric vector of scores
+##' Scoring
+##' @title Summarizing an encoding ("scoring" the genome)
+##' @description These functions convert two-column matrices of
+##' encodings into summary vectors based on an operation applied to
+##' each row.
+##' @details These functions accept encoding matrices and return
+##' numeric vectors that summarize the marker measurements at each
+##' row.
+##' @param encoding matrix with two columns giving marker encodings
+##' @return A numeric vector of scores with one numeric for each row
+##' of `encoding`.
 ##' @author Chris Salahub
+##' @describeIn scoring The additive score
 scoreAdditive <- function(encoding) {
     encoding[,1] + encoding[,2]
 }
+##' @describeIn scoring The dominance score
 scoreDominance <- function(encoding) {
     apply(encoding, 1, max)
 }
+##' @describeIn scoring The homozygous score
 scoreHomozygous <- function(encoding) {
     as.numeric(encoding[,1] == encoding[,2])
 }
 
-##' @title Observed correlation between markers for a population
-##' @param population a list of genome objects measured at the same
-##' nmark genetic locations
-##' @param scoring function to summarize each genome into a vector
-##' @param ... additional arguments to pass to cor
-##' @return a correlation matrix of nmark x nmark
+##' @title Compute observed correlation for a `population`
+##' @details A wrapper which computes the correlation for a
+##' `population` given a scoring function to apply to each
+##' encoding.
+##' @param population `population` object
+##' @param scoring function which accepts an encoding matrix and
+##' returns a numeric vector with one numeric for each row of the
+##' encoding matrix
+##' @param ... additional arguments to pass to `cor`
+##' @return A correlation matrix between markers in `population`.
 ##' @author Chris Salahub
 popCorrelation <- function(population, scoring = scoreAdditive, ...) {
     popScores <- sapply(population$encodings, scoring)
     cor(t(popScores), ...)
 }
 
-##' @title Theoretical correlation for a genome
-##' @param genome genome or population object with slots giving
+##' @title Compute the theoretical correlation in a genome
+##' @details Using a given map distance function and population cross
+##' setting, returns the theoretical correlation, proportional to
+##' $$1/2 - p_r(d)/2,$$
+##' where $p_r(d)$ is the probability of recombination for markers
+##' with distance $d$ between them.
+##' @param genome `genome` or `population` with slots giving
 ##' chromosomes and locations of markers
-##' @param map function to convert distances to probabilities of
-##' recombination
+##' @param map function which accepts a vector of numerics giving
+##' distances between locations and returns a vector of probabilities
+##' of recombination for the corresponding distances
 ##' @param setting population setting (one of backcross, intercross,
-##' or halfback) that determines the constant multiplying the
-##' probabilities to be correlations
-##' @return the correlation derived from the distances of genome
+##' or halfback) that determines the constant for computing
+##' correlation
+##' @return The correlation derived from the distances between markers
+##' in `genome` of `population`.
 ##' @author Chris Salahub
 theoryCorrelation <- function(genome, map = mapHaldane,
                               setting = "intercross") {
@@ -151,25 +186,31 @@ theoryCorrelation <- function(genome, map = mapHaldane,
 }
 
 ##' @title Visualizing genomic correlation
-##' @param corrs correlation matrix
-##' @param ... optional arguments to pass to image
-##' @return nothing, but plot the correlations in a heat map
+##' @details A simple wrapper for `image` that places the correlation
+##' in a more intuitive form where the 1,1 entry is in the top left.
+##' @param corrs a numeric correlation matrix
+##' @param ... optional arguments to pass to `image`
+##' @return Returns nothing, but plots the correlations in a heat map
+##' in the active device.
 ##' @author Chris Salahub
-## write a small wrapper for the image function to place the diagonal
 corrImg <- function(corrs, ...) {
     newcorr <- t(apply(corrs, 1, rev))
     image(newcorr, ...)
 }
 
-##' @title Adding chromosome boundaries and labels to the plot
-##' @param genome genome or population object corresponding to the
-##' correlation plot
-##' @param borders boolean, should borders around each chromosome
-##' block be added?
-##' @param lncol color of lines
+##' @title Add chromosome boundaries and labels to a plot
+##' @details Meant to be used after calling `corrImg`, this function
+##' adds vertical and horizontal lines to a plot to visually separate
+##' the chromosomes of a correlation matrix and labels the bordered
+##' regions accordingly.
+##' @param genome `genome` or `population` corresponding to the
+##' correlation matrix plotted on the active device
+##' @param borders logical, should extra borders around each
+##' chromosome block on the diagonal be added?
+##' @param lncol character giving the colour of lines
 ##' @param ... additional arguments to pass to rect if borders = TRUE
-##' @return nothing, but add lines separating chromosome blocks to a
-##' plotted correlation heat map
+##' @return Returns nothing, but adds lines separating chromosomes
+##' to a plotted correlation heat map
 ##' @author Chris Salahub
 addChromosomeLines <- function(genome, borders = FALSE,
                                lncol = "gray70", ...) {
@@ -195,14 +236,26 @@ addChromosomeLines <- function(genome, borders = FALSE,
     }
 }
 
-##' @title Print method for a population object
-##' @param population instance of the population class
-##' @return nothing, but print a quick summary of the genome to
-##' console
+##' @title S3 methods for `population`
+##' @description Print method
+##' @param population `population` object
+##' @return Returns nothing, but prints a quick summary of the
+##' populations to console
 ##' @author Chris Salahub
 print.population <- function(population) {
-    cat("A population of", length(population$encoding), "genomes",
-        "measured at markers across", length(population$location),
-        "chromosomes, distributed:\n", table(population$chromosome),
-        "\n")
+    ne <- length(population$encoding)
+    nm <- length(population$chromosome)
+    nc <- length(population$location)
+    dtab <- table(population$chromosome)
+    mis <- 100*round(sum(is.na(unlist(population$encoding)))/
+                     length(unlist(genome$encoding)), 2)
+    if (mis > 0) {
+        cat("A population of", ne, "genomes measured at markers",
+            "across", nc, "chromosomes, distributed:\n", dtab,
+            ".\nRoughly", mis, "% of the data is missing.")
+    } else {
+        cat("A population of", ne, "genomes measured at markers",
+            "across", nc, "chromosomes, distributed:\n", dtab, "\n")
+
+    }
 }
