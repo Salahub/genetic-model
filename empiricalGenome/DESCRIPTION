@@ -13,3 +13,4 @@ Enhances:
 License: GPL (>= 3) | file LICENCE
 NeedsCompilation: no
 Repository: CRAN
+RoxygenNote: 7.2.3

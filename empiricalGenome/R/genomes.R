@@ -1,17 +1,32 @@
 ## MAIN FUNCTIONS ####################################################
 
 ##' @title Simulate a genome object
-##' @param nmark vector of integers of length nchrom giving the
-##' count of measured markers on each chromosome, if named it is
-##' assumed the names correspond to the chromosomes, otherwise
-##' chromosomes are simply numbered
-##' @param markerFun list of functions to simulate marker measurements
-##' by chromosome, recycled if it is not as long as nmark
+##' @description `simGenome` simulates a genome object based on the
+##' distribution of markers in `nmark` and the marker and location
+##' generating functions in `markerFuns` and `locFuns`
+##' @details `alleles` must be a list of the same length as
+##' `sum(nmark)`, with each element providing the possible alleles for
+##' the corresponding marker. If it is not provided, the Mendelian
+##' A/a biallelic annotation is assumed for every marker. If either of
+##' `markerFuns` or `locFuns` provides a function rather than a list
+##' of functions, this function is recycled across every chromosome.
+##' Otherwise, the length of the list must match the number of
+##' chromosomes to provide the different functions used to generate
+##' encodings and locations on each chromosome.
+##' @param nmark vector of integers giving the count of measured
+##' markers by chromosome, if it is named it is assumed the names
+##' correspond to the chromosomes, otherwise chromosomes are numbered
+##' in order
+##' @param markerFun list of functions that simulate marker
+##' encodings by chromosome, recycled if it is not as long as nmark
 ##' @param locFuns list of functions that generate locations for
 ##' markers by chromosome, recycled if it is not as long as nmark
 ##' @param alleles vector of possible allele annotations, if missing
-##' this is taken to be c("A","a") for every marker site
-##' @return a genome object
+##' this is taken to be `c("A","a")` for every marker site
+##' @return A genome object with encodings and locations generated
+##' by the corresponding functions for each chromosome.
+##' @examples
+##' simGenome(c("1" = 10, "2" = 5, "X" = 19))
 ##' @author Chris Salahub
 simGenome <- function(nmark, alleles, markerFuns = markerHybrid,
                       locFuns = locationRegular) {
@@ -35,14 +50,19 @@ simGenome <- function(nmark, alleles, markerFuns = markerHybrid,
     genome
 }
 
-##' @title Filling the encoding of a genome
+##' @title Making a genome from provided slots
+##' @description `makeGenome` checks arguments for conformity and
+##' then stores them in a `genome` object.
+##' @details A simple constructor that checks arguments and provides
+##' descriptive errors to ensure a valid genome is constructed.
 ##' @param location list of marker locations by chromosome
 ##' @param alleles list of alleles by marker location
 ##' @param chromosome factor giving chromosome values with levels
-##' ordered as they should appear in plots, etc.
+##' ordered as they should appear in plots
 ##' @param encoding numeric two-column matrix with the same number
-##' of rows as the length of chromosome, alleles
-##' @return a genome object with the given locations and encodings
+##' of rows as the length of `chromosome`, `alleles`
+##' @return A genome object with slots given by the provided
+##' arguments.
 ##' @author Chris Salahub
 makeGenome <- function(location, alleles, chromosome,
                        encoding = markerHybrid(length(chromosome))) {
@@ -68,13 +88,17 @@ makeGenome <- function(location, alleles, chromosome,
               class = "genome")
 }
 
-##' @title Subsetting a genome object
+##' @title Subsetting the markers of a genome object
+##' @details A helper function that subsets every slot of a `genome`
+##' and drops unused `chromosome` levels by a set of marker indices.
 ##' @param genome object to be subset
 ##' @param inds indices of markers to be kept
-##' @return a genome object containing only the markers at inds
+##' @return A genome object containing only the markers at `inds`,
+##' with any chromosomes fully removed dropped as levels of
+##' `genome$chromosome`.
 ##' @author Chris Salahub
 subsetGenome <- function(genome, inds) {
-    newchr <- genome$chromosome[inds] # subset chromosomes
+    newchr <- droplevels(genome$chromosome[inds]) # subset chromosomes
     newloc <- split(unlist(genome$location)[inds], newchr)
     structure(list(encoding = genome$encoding[inds,],
                    chromosome = newchr,
