@@ -257,8 +257,8 @@ print.genome <- function(genome) {
                      length(genome$encoding), 2)
     if (mis > 0) {
         cat("A genome object encoding", nm, "markers across", nc,
-            "chromosomes, distributed:\n", dtab, ".\nRoughly",
-            mis, "% of the data is missing.")
+            "chromosomes, distributed:\n", dtab, "\nRoughly",
+            mis, "% of the data is missing.\n")
     } else {
         cat("A genome object encoding", nm, "markers across", nc,
             "chromosomes, distributed:\n", dtab)

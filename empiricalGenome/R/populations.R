@@ -248,14 +248,15 @@ print.population <- function(population) {
     nc <- length(population$location)
     dtab <- table(population$chromosome)
     mis <- 100*round(sum(is.na(unlist(population$encoding)))/
-                     length(unlist(genome$encoding)), 2)
+                     length(unlist(population$encoding)), 2)
     if (mis > 0) {
-        cat("A population of", ne, "genomes measured at markers",
-            "across", nc, "chromosomes, distributed:\n", dtab,
-            ".\nRoughly", mis, "% of the data is missing.")
+        cat("A population of", ne, "genomes encoded at", sum(dtab),
+            "markers across", nc, "chromosomes, distributed:\n", dtab,
+            "\nRoughly", mis, "% of the data is missing.\n")
     } else {
-        cat("A population of", ne, "genomes measured at markers",
-            "across", nc, "chromosomes, distributed:\n", dtab, "\n")
+        cat("A population of", ne, "genomes encoded at", sum(dtab),
+            "markers across", nc, "chromosomes, distributed:\n", dtab,
+            "\n")
 
     }
 }
