@@ -261,7 +261,7 @@ print.genome <- function(genome) {
             mis, "% of the data is missing.\n")
     } else {
         cat("A genome object encoding", nm, "markers across", nc,
-            "chromosomes, distributed:\n", dtab)
+            "chromosomes, distributed:\n", dtab, "\n")
     }
 }
 ##' @describeIn methods Plot method for `genome`
