@@ -17,8 +17,28 @@ mgiPNames <- c(cope_jenk = "MGI_Copeland-Jenkins_Panel.rpt",
                reev_c16 = "MGI_Reeves_Chr_16_Panel.rpt",
                seldin = "MGI_Seldin_Panel.rpt",
                ucla_bsb = "MGI_UCLA_BSB_Panel.rpt")
-mgiMNames <- c("MRK_List1.rpt", "MRK_List2.rpt")
+mgiMNames <- c("MRK_List2.rpt")
 chrOrder <- c(as.character(1:19), "X") # control factor level ordering
+
+## make a well-formed phenome API request from locations, chromosome,
+## dataset, strains
+makeAPIreq <- function(beg, end, chr, dset = "Sanger4",
+                       strn = "all") {
+    paste0("https://phenome.jax.org/api/snpdata?dataset=", dset,
+           "&region=", chr, ":", beg, "-", end, "&strains=",
+           strn)
+}
+
+## process API output
+processAPIout <- function(strings) {
+    strings <- gsub("\"|,$", "", strings)
+    strings <- gsub(",$", ", ", strings)
+    splt <- strsplit(strings, ",")
+    mat <- do.call(rbind, splt[-1])
+    mat[mat == " "] <- ""
+    colnames(mat) <- splt[[1]]
+    mat
+}
 
 ## read in MGI data (http://www.informatics.jax.org/)
 readMGIrpt <- function(file) {
@@ -111,6 +131,26 @@ mgiBackCrossToGenome <- function(mgiPanel) {
     gens
 }
 
+##` a helper to create evenly spaced samples between the minimal and
+##' maximal marker locations given a matrix of markers with known
+##' locations on a single chromosome
+regularSample <- function(markers, n = 40) {
+    pos <- markers$loc
+    rng <- range(markers$loc)
+    evenBrks <- seq(rng[1], rng[2], length.out = n)
+    nearestInd <- numeric(n)
+    minDiff <- rep(Inf, n)
+    for (ii in seq_along(pos)) {
+        diffs <- abs(evenBrks - pos[ii])
+        closest <- which.min(diffs)
+        if (minDiff[closest] > diffs[closest]) {
+            minDiff[closest] <- diffs[closest]
+            nearestInd[closest] <- ii
+        }
+    }
+    markers[nearestInd,]
+}
+
 ## READ/PROCESS MGI DATA #############################################
 
 ##' another source of experimental data is the MGI website, which has
@@ -120,6 +160,47 @@ mgiBackCrossToGenome <- function(mgiPanel) {
 ##' are in the simulationFunctions file, we start by loading the MGI
 ##' provided database of markers (which is rather large)
 mgiMarkers <- readMGIlists() # descriptions of all markers
+
+##` filter and sample these by chromosome to pull genotype data
+##' by mouse strain
+mgiByChrom <- split(mgiMarkers[, c("cM Position", "Marker Symbol",
+                                   "genome coordinate start",
+                                   "genome coordinate end")],
+                    mgiMarkers$Chr)
+mgiByChrom <- lapply(mgiByChrom, # filter by known positions
+                     function(df) {
+                         names(df) <- c("loc", "sym", "beg", "end")
+                         df$loc <- as.numeric(df$loc)
+                         df$beg <- as.numeric(df$beg)
+                         df$end <- as.numeric(df$end)
+                         df[!is.na(df$loc), ]
+                     })
+##' get regularly sampled markers across each chromosome
+mgiRegSamps <- lapply(mgiByChrom[sapply(mgiByChrom, nrow) > 0],
+                      regularSample, n = 40)
+mgiRegSamps <- cbind(do.call(rbind, mgiRegSamps), # add chromosomes
+                     chr = rep(names(mgiRegSamps),
+                               times = sapply(mgiRegSamps, nrow)))
+mgiRegSamps <- na.omit(mgiRegSamps)
+
+##' reduce interval lengths to make reads shorter
+mgiRegSamps$end <- mgiRegSamps$beg +
+    pmin(with(mgiRegSamps, end - beg), 1e3)
+##' make API requests
+phenAPIRequests <- with(mgiRegSamps, makeAPIreq(beg, end, chr))
+##' pull the data
+phenData <- vector(mode = "list", length = length(phenAPIRequests))
+names(phenData) <- phenAPIRequests
+phenInd <- setNames(1:length(phenAPIRequests), phenAPIRequests)
+for (req in phenAPIRequests) {
+    cat(phenInd[req], "of", length(phenAPIRequests), ":\n  ")
+    curr <- url(req)
+    phenData[[req]] <- scan(curr, sep = "\n", what = "character")
+    close(curr)
+}
+phenDataMats <- lapply(phenData[sapply(phenData, length) > 1],
+                       processAPIout)
+phenDataFull <- do.call(rbind, phenDataMats)
 
 ##' next we can consider the panels, first read the data
 mgiPanels <- lapply(paste0(mgiUrl, mgiPNames), readMGIrpt)
