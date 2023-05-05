@@ -22,7 +22,7 @@ chrOrder <- c(as.character(1:19), "X") # control factor level ordering
 
 ## make a well-formed phenome API request from locations, chromosome,
 ## dataset, strains
-makeAPIreq <- function(beg, end, chr, dset = "Sanger4",
+makeAPIreq <- function(beg, end, chr, dset = "UCLA1",
                        strn = "all") {
     paste0("https://phenome.jax.org/api/snpdata?dataset=", dset,
            "&region=", chr, ":", beg, "-", end, "&strains=",
@@ -161,7 +161,7 @@ regularSample <- function(markers, n = 40) {
 ##' provided database of markers (which is rather large)
 mgiMarkers <- readMGIlists() # descriptions of all markers
 
-##` filter and sample these by chromosome to pull genotype data
+##' filter and sample these by chromosome to pull genotype data
 ##' by mouse strain
 mgiByChrom <- split(mgiMarkers[, c("cM Position", "Marker Symbol",
                                    "genome coordinate start",
@@ -177,25 +177,27 @@ mgiByChrom <- lapply(mgiByChrom, # filter by known positions
                      })
 ##' get regularly sampled markers across each chromosome
 mgiRegSamps <- lapply(mgiByChrom[sapply(mgiByChrom, nrow) > 0],
-                      regularSample, n = 40)
+                      regularSample, n = 60)
 mgiRegSamps <- cbind(do.call(rbind, mgiRegSamps), # add chromosomes
                      chr = rep(names(mgiRegSamps),
                                times = sapply(mgiRegSamps, nrow)))
 mgiRegSamps <- na.omit(mgiRegSamps)
 
-##' reduce interval lengths to make reads shorter
-mgiRegSamps$end <- mgiRegSamps$beg +
-    pmin(with(mgiRegSamps, end - beg), 1e3)
+##' standardize interval lengths, decrease length to make reads
+##' shorter and increase to make them longer
+intLen <- 2e5
+mgiRegSamps$end <- mgiRegSamps$beg + intLen
 ##' make API requests
 phenAPIRequests <- with(mgiRegSamps, makeAPIreq(beg, end, chr))
 ##' pull the data
 phenData <- vector(mode = "list", length = length(phenAPIRequests))
 names(phenData) <- phenAPIRequests
-phenInd <- setNames(1:length(phenAPIRequests), phenAPIRequests)
-for (req in phenAPIRequests) {
-    cat(phenInd[req], "of", length(phenAPIRequests), ":\n  ")
-    curr <- url(req)
-    phenData[[req]] <- scan(curr, sep = "\n", what = "character")
+hits <- numeric(length(phenData))
+for (ii in seq_along(phenAPIRequests)) {
+    cat(ii, "of", length(phenAPIRequests), ":\n  ")
+    curr <- url(phenAPIRequests[ii])
+    phenData[[ii]] <- scan(curr, sep = "\n", what = "character")
+    hits[ii] <- length(phenData[[ii]]) > 1
     close(curr)
 }
 phenDataMats <- lapply(phenData[sapply(phenData, length) > 1],
