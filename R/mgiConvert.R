@@ -203,6 +203,9 @@ for (ii in seq_along(phenAPIRequests)) {
 phenDataMats <- lapply(phenData[sapply(phenData, length) > 1],
                        processAPIout)
 phenDataFull <- do.call(rbind, phenDataMats)
+## drop duplicates (overlapping requests)
+phenDataFull <- phenDataFull[match(unique(phenDataFull[, "rs"]),
+                                   phenDataFull[, "rs"]),]
 
 ##' next we can consider the panels, first read the data
 mgiPanels <- lapply(paste0(mgiUrl, mgiPNames), readMGIrpt)

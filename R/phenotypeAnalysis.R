@@ -23,6 +23,13 @@ joinPhenoGeno <- function(pheno, geno, phenoCols = 1:4) {
     phenoGeno
 }
 
+## simple helper
+klDivU <- function(tab) {
+    tot <- sum(tab)
+    unif <- tot/length(tab)
+    sum((unif/tot)*log(unif/tab))
+}
+
 ## load strain SNPs
 snps <- readRDS("./data/strainSNPs.Rds")
 snps[snps == ""] <- NA
@@ -38,10 +45,20 @@ phenoInds <- 1:2
 phenoGeno <- joinPhenoGeno(pheno, snps, phenoCols = phenoInds)
 ## filter out SNPs by distributions
 nlev <- sapply(phenoGeno, function(col) sum(levels(col) != ""))
-phenoGeno <- phenoGeno[, names(nlev)[nlev != 1]]
-## tables to help with genome selection
+phenoGeno <- phenoGeno[,nlev != 1]
+## features to help with genome selection
 colChr <- snps[names(phenoGeno)[-phenoInds], "chr"]
+colRd <- snps[names(phenoGeno)[-phenoInds], "requested"]
 tabs <- sapply(phenoGeno, table)
+## kl divergence
+klds <- sapply(tabs, klDivU)
+## small kldivs
+pGklcutoff <- phenoGeno[, c(phenoInds,
+                            which(klds[-phenoInds] < 0.1) + 2)]
+## a few others: min per request
+minRead <- sapply(split(klds[-phenoInds], colRd),
+                  function(k) names(k)[which.min(k)])
+pGminR <- phenoGeno[, c(names(phenoGeno)[phenoInds], minRead)]
 
 ## get snp column indices
 snpCols <- (ncol(pheno)+1):(ncol(phenoGeno))
