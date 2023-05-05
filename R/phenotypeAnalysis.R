@@ -30,6 +30,13 @@ klDivU <- function(tab) {
     sum((unif/tot)*log(unif/tab))
 }
 
+## chi-square pool function
+poolChi <- function(p, k) {
+    M <- length(p) # dimension
+    pchisq(sum(qchisq(p, df = k, lower.tail = FALSE)), df = M*k,
+           lower.tail = FALSE)
+}
+
 ## load strain SNPs
 snps <- readRDS("./data/strainSNPs.Rds")
 snps[snps == ""] <- NA
@@ -59,22 +66,46 @@ pGklcutoff <- phenoGeno[, c(phenoInds,
 minRead <- sapply(split(klds[-phenoInds], colRd),
                   function(k) names(k)[which.min(k)])
 pGminR <- phenoGeno[, c(names(phenoGeno)[phenoInds], minRead)]
+## min by chromsome
+minChr <- sapply(split(klds[-phenoInds], colChr),
+                 function(k) names(k)[which.min(k)])
+pGminChr <- phenoGeno[, c(names(phenoGeno)[phenoInds],
+                          minChr)]
+
 
 ## get snp column indices
-snpCols <- (ncol(pheno)+1):(ncol(phenoGeno))
+testSnps <- pGminR
+testSnps$coat <- grepl("agouti", testSnps$coat)
+snpCols <- (ncol(pheno)+1):(ncol(testSnps))
 ## categorical target: chi square test of independence
 tests <- lapply(snpCols,
-               function(ind) chisq.test(phenoGeno[, "coat"],
-                                        phenoGeno[, ind]))
+                function(ind) chisq.test(testSnps[, "coat"],
+                                         testSnps[, ind])
+                                         #simulate.p.value = TRUE,
+                                         #B = 10000))
 ## extract p-values
 pvals <- sapply(tests, function(tst) tst$p.value)
+## get a squence of kappas for p-values
+kseq <- exp(seq(-8, 8, by = 0.01))
+pooled <- sapply(kseq, poolChi, p = pvals)
+plot(log(kseq), log(pooled), type = 'l') # kind of cool.. clear min
 
-## select one SNP from each request at random
-indsByReq <- split(snps[nlev[-(1:ncol(pheno))] != 1, "rs"],
-                   snps[nlev[-(1:ncol(pheno))] != 1, "requested"])
+## does this min have something to do with beta densities
+step <- 0.1
+a <- seq(0.3, 5, by = step)
+b <- seq(0.3, 5, by = step)
+params <- expand.grid(b = b, a = a)
+betas <- lapply(seq_len(nrow(params)),
+                function(ii) function(n) rbeta(n, params$a[ii],
+                                               params$b[ii]))
+## generate random p-values
+nsim <- 1e4
+samps <- lapply(betas, function(f) f(nsim))
+## sweep with pooled p kappas
+kseq <- exp(seq(-8, 8, by = 0.5))
+pools <- lapply(samps, function(smp) sapply(kseq, poolChi, p = smp))
 
-
-## paigen data
+## 2nd example: paigen data ##########################################
 pheno <- read.csv("./data/Paigen4_animaldata.csv")
 ## add genotypes
 
