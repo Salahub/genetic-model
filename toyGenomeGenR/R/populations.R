@@ -95,7 +95,7 @@ selectGenome <- function(population, ind = 1) {
 ##' returns `TRUE`
 ##' @author Chris Salahub
 filterPopulation <- function(population,
-                             rule = function(mat) any(is.na(mat))) {
+                             rule = function(mat) !any(is.na(mat))) {
     trues <- sapply(population$encodings, rule)
     structure(list(encodings = population$encodings[trues],
                    chromosome = population$chromosome,
