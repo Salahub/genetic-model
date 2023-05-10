@@ -133,7 +133,8 @@ plot(log(kseq), log(pooled), type = 'l') # kind of cool.. clear min
 hist(pvals)
 
 ## smallest p-values are for chromosomes 1, 4, 10, 19
-chr1 <- pGbyR[, c(phenoInds, which(names(pGbyR) %in% snps[snps[, "chr"] == "19", "rs"]))]
+chr1 <- pGbyR[, c(phenoInds, which(names(pGbyR) %in%
+                                   snps[snps[, "chr"] == "19", "rs"]))]
 snpCols <- (ncol(pheno)+1):(ncol(chr1))
 tests <- lapply(snpCols,
                 function(ind) kruskal.test(chr1[, "TG"],
@@ -144,4 +145,47 @@ pooled <- sapply(kseq, poolChi, p = pvals)
 plot(log(kseq), log(pooled), type = 'l')
 hist(pvals)
 
-## example 3
+## example 3 hmdp bone density measures on male mice #################
+pheno <- read.csv("./data/HMDPpheno1_animaldata.csv")
+
+## join to snps
+phenoInds <- 1:6
+phenoGeno <- joinPhenoGeno(pheno, snps, phenoCols = 1:6)
+## filter out SNPs by distributions
+nlev <- sapply(phenoGeno, function(col) sum(levels(col) != ""))
+phenoGeno <- phenoGeno[,nlev != 1]
+## inds to aid in selection
+colChr <- snps[names(phenoGeno)[-phenoInds], "chr"]
+colRd <- snps[names(phenoGeno)[-phenoInds], "requested"]
+tabs <- sapply(phenoGeno, table)
+
+## a few others: most complete per request
+set.seed(834090523)
+byRead <- sapply(split(sapply(tabs, sum)[-phenoInds], colRd),
+                 function(k) names(k)[which.max(k)])
+pGbyR <- phenoGeno[, c(names(phenoGeno)[phenoInds], byRead)]
+## random subset of these
+pGbyRsub <- cbind(pGbyR[, phenoInds],
+                  pGbyR[ , sample((max(phenoInds)+1):ncol(pGbyR),
+                                  40)])
+## k most complete by chromosome
+k <- 1
+byChr <- sapply(split(sapply(tabs, sum)[-phenoInds], colChr),
+                function(k) names(k)[order(k, decreasing = TRUE)[1:1]])
+pGbyChr <- phenoGeno[, c(names(phenoGeno)[phenoInds],
+                         byChr)]
+
+## get snp column indices
+testSnps <- pGbyRsub
+snpCols <- (ncol(pheno)+1):(ncol(testSnps))
+## continuous target: kruskal-wallis one-way anova test
+tests <- lapply(snpCols,
+                function(ind) kruskal.test(testSnps[, "BMD_femur"],
+                                           g = testSnps[, ind]))
+## extract p-values
+pvals <- sapply(tests, function(tst) tst$p.value)
+## get a sequence of kappas for p-values
+kseq <- exp(seq(-8, 8, by = 0.01))
+pooled <- sapply(kseq, poolChi, p = pvals)
+plot(log(kseq), log(pooled), type = 'l') # kind of cool.. clear min
+hist(pvals)

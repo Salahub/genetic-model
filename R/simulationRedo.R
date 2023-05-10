@@ -1,5 +1,5 @@
 ## load functions, set image output directory
-library(empiricalGenome)
+library(toyGenomeGenR)
 
 ## SIMULATIONS #######################################################
 ## start incredibly simple: a single chromosome, markers equidistant

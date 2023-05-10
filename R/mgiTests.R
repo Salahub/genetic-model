@@ -1,5 +1,5 @@
 ## load package with data, genome functions
-library(empiricalGenome)
+library(toyGenomeGenR)
 
 ## FUNCTIONS TO ANALYZE, SIMULATE MGI PANELS #########################
 ## drop bad panelists
