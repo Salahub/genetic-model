@@ -1,5 +1,5 @@
 ## load functions, set image output directory
-library(empiricalGenome)
+library(toyGenomeGenR)
 
 ## FUNCTIONS TO LOAD, PROCESS MGI DATA ###############################
 mgiUrl <- "https://www.informatics.jax.org/downloads/reports/"
@@ -192,7 +192,7 @@ phenAPIRequests <- with(mgiRegSamps, makeAPIreq(beg, end, chr))
 ##' pull the data
 phenData <- vector(mode = "list", length = length(phenAPIRequests))
 names(phenData) <- phenAPIRequests
-hits <- numeric(length(phenData))
+hits <- logical(length(phenData))
 for (ii in seq_along(phenAPIRequests)) {
     cat(ii, "of", length(phenAPIRequests), ":\n  ")
     curr <- url(phenAPIRequests[ii])
@@ -200,8 +200,17 @@ for (ii in seq_along(phenAPIRequests)) {
     hits[ii] <- length(phenData[[ii]]) > 1
     close(curr)
 }
-phenDataMats <- lapply(phenData[sapply(phenData, length) > 1],
+## process the API pulls
+phenDataMats <- lapply(phenData[as.logical(hits)],
                        processAPIout)
+## compute centiMorgans
+mgiCMrate <- diff(mgiRegSamps$loc)/diff(mgiRegSamps$beg)
+mgiCMrate[mgiCMrate < 0] <- mgiCMrate[which(mgiCMrate < 0) - 1]
+phencMs <- mapply(function(mat, beg, rt, loc) (mat - beg)*rt + loc,
+                  phenDataMats,
+                  mgiRegSamps$beg[hits],
+                  mgiCMrate[hits]
+## put it in a single matrix
 phenDataFull <- do.call(rbind, phenDataMats)
 ## drop duplicates (overlapping requests)
 phenDataFull <- phenDataFull[match(unique(phenDataFull[, "rs"]),

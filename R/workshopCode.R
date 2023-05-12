@@ -103,7 +103,7 @@ for (ii in 1:nsim) {
 }
 
 ## plot observed curves against quantiles
-ind <- 1
+ind <- 5
 mat <- curves
 plot(NA, xlim = range(log(kseq, base = 10)),
      ylim = c(-15,0),
@@ -164,7 +164,7 @@ for (ii in 1:nsim) {
 }
 
 ## plot observed curves and quantiles
-ind <- 4
+ind <- 5
 mat <- curves
 plot(NA, xlim = range(log(kseq, base = 10)),
      ylim = c(-120,0),
@@ -204,7 +204,7 @@ for (ii in 1:nsim) {
 }
 
 ## plot observed curves against quantiles
-ind <- 3
+ind <- 5
 mat <- depcurves
 plot(NA, xlim = range(log(kseq, base = 10)),
      ylim = c(-15,0),
@@ -232,7 +232,7 @@ xpos <- rep(jax_bsbSingle$location$`1`, nsim)
 ind <- 5
 plot(x = xpos,
      y = log(c(pmat[ind,,]), 10), type = "n",
-     ylab = expression(paste("log", [10], "(", p, ")")),
+     ylab = expression(paste(log[10], "(", p, ")")),
      xlab = "Marker position (cM)", ylim = c(-17, 0))
 for (x in unique(xpos)) {
     boxplot(log(c(pmat[ind,,])[xpos == x], 10), add = TRUE,
@@ -296,7 +296,7 @@ for (ii in 1:nsim) {
 
 ## plot observed curves against quantiles
 ind <- 3
-mat <- curves
+mat <- adjcurves
 plot(NA, xlim = range(log(kseq, base = 10)),
      ylim = c(-50,0),
             #range(c(log(jax_mgPooled, 10),
