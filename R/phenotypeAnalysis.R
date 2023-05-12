@@ -1,3 +1,5 @@
+library(toyGenomeGenR)
+
 ## a function to join genotypes and phenotypes
 joinPhenoGeno <- function(pheno, geno, phenoCols = 1:4) {
     strains <- factor(pheno$strain) # for easy reference
@@ -23,11 +25,45 @@ joinPhenoGeno <- function(pheno, geno, phenoCols = 1:4) {
     phenoGeno
 }
 
-## chi-square pool function
-poolChi <- function(p, k) {
-    M <- length(p) # dimension
-    pchisq(sum(qchisq(p, df = k, lower.tail = FALSE)), df = M*k,
+## independent pooled chi value
+poolChi <- function(p, kap) {
+    pchisq(sum(qchisq(p, df = kap, lower.tail = FALSE)),
+           df = length(p)*kap, lower.tail = FALSE)
+}
+
+## can we simply adjust using the results from papers to get higher
+## curves?
+## try the method of moments gamma match from ferrari's arxiv note on
+## chi-squared sums
+gammaApprox <- function(qs, sigma, kap) {
+    diag(sigma) <- 0 # for later sum
+    M <- length(qs)
+    u <- 2*(1 + 2*sum(sigma*kap)/(M*kap))
+    pgamma(sum(qs), shape = (M*kap)/u, scale = u,
            lower.tail = FALSE)
+}
+## can also try a satterthwaite approximation
+satterApprox <- function(qs, sigma, kap) {
+    diag(sigma) <- 0
+    M <- length(qs)
+    ex <- M*kap
+    varx <- 2*M*kap + 2*kap*sum(sigma)
+    f <- 2*ex^2/varx
+    c <- varx/(2*ex)
+    pchisq(sum(qs)/c, df = f, lower.tail = FALSE)
+}
+## what does this do to pooled p-values?
+poolChiDep <- function(ps, kap, sigma,
+                       method = c("gamma", "satterthwaite")) {
+    chis <- qchisq(ps, df = kap, lower.tail = FALSE)
+    method <- match.arg(method)
+    if (method == "gamma") {
+        gammaApprox(chis, sigma, kap)
+    } else if (method == "satterthwaite") {
+        satterApprox(chis, sigma, kap)
+    } else {
+        stop("Method must be one of 'gamma' and 'satterthwaite'")
+    }
 }
 
 ## load strain SNPs
@@ -81,8 +117,10 @@ pvals <- sapply(tests, function(tst) tst$p.value)
 ## get a squence of kappas for p-values
 kseq <- exp(seq(-8, 8, by = 0.01))
 pooled <- sapply(kseq, poolChi, p = pvals)
-plot(log(kseq), log(pooled), type = 'l') # kind of cool.. clear min
+plot(log(kseq, 10), log(pooled, 10), type = 'l') # clear min
 abline(h = log(0.05), lty = 2, col = "firebrick")
+abline(h = seq(-8, 0, by = 2), v = seq(-3, 3, 1),
+       col = adjustcolor("gray", 0.6))
 hist(pvals)
 ## seemingly robust to random subsamples!
 
@@ -118,7 +156,7 @@ pGbyChr <- phenoGeno[, c(names(phenoGeno)[phenoInds],
                          byChr)]
 
 ## get snp column indices
-testSnps <- pGbyChr
+testSnps <- pGbyRsub
 snpCols <- (ncol(pheno)+1):(ncol(testSnps))
 ## continuous target: kruskal-wallis one-way anova test
 tests <- lapply(snpCols,
@@ -129,7 +167,8 @@ pvals <- sapply(tests, function(tst) tst$p.value)
 ## get a sequence of kappas for p-values
 kseq <- exp(seq(-8, 8, by = 0.01))
 pooled <- sapply(kseq, poolChi, p = pvals)
-plot(log(kseq), log(pooled), type = 'l') # kind of cool.. clear min
+pooledadj <- sapply(kseq, poolChiDep, 
+plot(log(kseq), log(pooled), type = 'l')
 hist(pvals)
 
 ## smallest p-values are for chromosomes 1, 4, 10, 19

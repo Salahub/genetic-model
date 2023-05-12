@@ -201,20 +201,22 @@ for (ii in seq_along(phenAPIRequests)) {
     close(curr)
 }
 ## process the API pulls
-phenDataMats <- lapply(phenData[as.logical(hits)],
-                       processAPIout)
+phenDataMats <- lapply(phenData[hits], processAPIout)
 ## compute centiMorgans
 mgiCMrate <- diff(mgiRegSamps$loc)/diff(mgiRegSamps$beg)
 mgiCMrate[mgiCMrate < 0] <- mgiCMrate[which(mgiCMrate < 0) - 1]
-phencMs <- mapply(function(mat, beg, rt, loc) (mat - beg)*rt + loc,
-                  phenDataMats,
-                  mgiRegSamps$beg[hits],
-                  mgiCMrate[hits]
+mgiCMrate <- c(mgiCMrate, mgiCMrate[length(mgiCMrate)])
+phencMs <- mapply(function(mat, beg, rt, loc) (as.numeric(mat[, "bp38"]) - beg)*rt + loc,
+                  phenDataMats, mgiRegSamps$beg[hits],
+                  mgiCMrate[hits], mgiRegSamps$loc[hits])
 ## put it in a single matrix
-phenDataFull <- do.call(rbind, phenDataMats)
+phenDataFull <- cbind(cMs = unlist(phencMs), do.call(rbind, phenDataMats))
 ## drop duplicates (overlapping requests)
 phenDataFull <- phenDataFull[match(unique(phenDataFull[, "rs"]),
                                    phenDataFull[, "rs"]),]
+rownames(phenDataFull) <- NULL
+phenDataFull <- phenDataFull[, c("chr", "bp38", "cMs",
+                                 colnames(phenDataFull)[4:ncol(phenDataFull)])]
 
 ##' next we can consider the panels, first read the data
 mgiPanels <- lapply(paste0(mgiUrl, mgiPNames), readMGIrpt)
