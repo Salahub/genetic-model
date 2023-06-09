@@ -167,7 +167,7 @@ pvals <- sapply(tests, function(tst) tst$p.value)
 ## get a sequence of kappas for p-values
 kseq <- exp(seq(-8, 8, by = 0.01))
 pooled <- sapply(kseq, poolChi, p = pvals)
-pooledadj <- sapply(kseq, poolChiDep, 
+#pooledadj <- sapply(kseq, poolChiDep, p = pvals, sigma =
 plot(log(kseq), log(pooled), type = 'l')
 hist(pvals)
 

@@ -55,6 +55,109 @@ mgiDropBadMarker <- function(panel, prop = 0) {
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(40)
 breaks <- seq(-1, 1, length.out = 41)
 
+## convert marker correlation to chi covariance
+## trait parameters and kappa values
+kseq <- exp(seq(-8, 8, by = 0.1))
+## define range of correlations to compute over
+corrs <- seq(0, 1, by = 0.02)
+## for each, convert to a probability of recombination
+prec <- (1 - corrs)/2
+## write a simple function to generate pesudo-pairs based on prec and
+## repeat a test of association with a trait
+simTest <- function(prec, nsim = 1e5, npop = 1e2, probs = c(0.5, 0.5),
+                    trait = rnorm(npop, sd = 0.3), test = kruskal) {
+    r <- rank(trait) # ranking of traits
+    ties <- table(trait) # ties
+    init <- matrix(rep(sample(c(0,1), npop*nsim, replace = TRUE,
+                              probs), 2),
+                   nrow = 2, ncol = npop*nsim, byrow = TRUE)
+    rec <- runif(npop*nsim) < 2*prec # recom
+    init[2,rec] <- sample(c(0,1), sum(rec), replace = TRUE, probs)
+    vals <- array(init, dim = c(2, npop, nsim)) # return array
+    ps <- apply(vals, c(1,3), test, x = r, n = npop, TIES = ties)
+    ps
+}
+## custom kruskal test (gutted version of kruskal.test)
+kruskal <- function(x, g, n, TIES) {
+    g <- factor(g)
+    k <- nlevels(g)
+    ##r <- rank(x)
+    r <- x
+    ##TIES <- table(x)
+    STATISTIC <- sum(tapply(r, g, sum)^2/tapply(r, g, length))
+    STATISTIC <- ((12 * STATISTIC/(n * (n + 1)) - 3 * (n + 1))/(1 -
+        sum(TIES^3 - TIES)/(n^3 - n)))
+    PARAMETER <- k - 1L
+    pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
+}
+
+## different tester for random splits
+simSplit <- function(prec, nsim = 1e5, npop = 1e2, probs = c(0.5, 0.5),
+                     trait = rnorm(npop, sd = 0.3)) {
+    r <- rank(trait) # ranking of traits
+    init <- matrix(rep(sample(c(0,1), npop*nsim, replace = TRUE,
+                              probs), 2),
+                   nrow = 2, ncol = npop*nsim, byrow = TRUE)
+    rec <- runif(npop*nsim) < 2*prec # recom
+    init[2,rec] <- sample(c(0,1), sum(rec), replace = TRUE, probs)
+    vals <- array(init, dim = c(2, npop, nsim)) # return array
+    ps <- apply(vals, 3, randomsplit, x = r, n = npop)
+    ps
+}
+## and a bin splitting p-value
+randomsplit <- function(x, g, n, lim = 10) {
+    brk1 <- sample(lim:(n-lim), 1)
+    if (brk1-2*lim <= 0) {
+        brk2 <- sample(seq(brk1+lim, n-lim, by = 1), 1)
+        brks <- c(0, brk1, brk2, n)
+    } else if (n-brk1-2*lim <= 0) {
+        brk2 <- sample(seq(lim, brk1-lim, by = 1), 1)
+        brks <- c(0, brk2, brk1, n)
+    } else {
+        brk2 <- sample(c(seq(lim, brk1-lim, by = 1),
+                         seq(brk1+lim, n-lim, by = 1)), 1)
+        brks <- c(0, min(brk1, brk2), max(brk1, brk2), n)
+    }
+    xc <- cut(x, breaks = c(0, brk1, brk2, n))
+    obs1 <- table(xc, g[1,]) # counts
+    obs2 <- table(xc, g[2,])
+    ex1 <- outer(diff(brks), table(g[1,])/n) # expected densities
+    ex2 <- outer(diff(brks), table(g[2,])/n) # expected densities
+    pchisq(c(sum(obs1^2/ex1), sum(obs2^2/ex2)) - n,
+           df = prod(dim(obs1) - 1), lower.tail = FALSE)
+}
+
+if (!("chiCorrs.Rds" %in% list.files())) {
+    set.seed(8081326)
+    ## apply this to the range of recombination probabilities
+    precPvals <- replicate(5,
+                           simplify2array(lapply(prec, simSplit, nsim = 1e4,
+                                                 npop = 2.5e2)),
+                           simplify = FALSE)
+    ## get correlation of chi transform by kappa
+    chiCorrs <- simplify2array(lapply(precPvals,
+                                      function(pairs) {
+                                          sapply(kseq,
+                                                 function(k) {
+                                                     apply(qchisq(pairs, k, lower.tail = FALSE),
+                                                           3, function(mat) cor(t(mat)))[2,]
+                                                 })
+                                      }))
+    ## save in single data frame
+    chiCordf <- data.frame(expand.grid(zcor = corrs, logkap = log(kseq),
+                                       rep = 1:length(precPvals)),
+                           chicor = c(chiCorrs))
+    ## save this as an RDS
+    saveRDS(chiCordf, "chiCorrs.Rds")
+} else {
+    chiCorrs <- readRDS(chiCordf)
+}
+## fit a 5th order polynomial
+chiCorMods <- lapply(log(kseq), function(k) {
+    lm(chicor ~ I(zcor^2) + I(zcor^4) + I(zcor^6) + I(zcor^8) +
+           I(zcor^10), data = chiCordf, subset = abs(chiCordf$logkap - k)<0.0001)$coefficients
+    })
+
 ## load the jax bsb data
 data(jax_bsb)
 jax_bsb
@@ -69,15 +172,15 @@ jax_bsbChr <- subsetPopulation(jax_bsb,
                                midChr(jax_bsb$chromosome))
 corrImg(popCorrelation(jax_bsbChr), col = pal, breaks = breaks)
 
-## define vector of counts
-ns <- c(1, 5, 10, 15, 20)
+## parameters
 beta <- 1
 sd <- 0.3
+## define vector of counts
+ns <- c(1, 5, 10, 15, 20)
 ## compute scores
 jax_scores <- sapply(jax_bsbChr$encodings, scoreAdditive)
 ## repeat generation and testing many times
 nsim <- 1e3
-kseq <- exp(seq(-10, 10, by = 0.5))
 nulls <- curves <- array(dim = c(length(ns), length(kseq), nsim))
 nullpmat <- pmat <- array(dim = c(length(ns), nrow(jax_scores),
                                   ncol = nsim))
@@ -103,7 +206,7 @@ for (ii in 1:nsim) {
 }
 
 ## plot observed curves against quantiles
-ind <- 5
+ind <- 3
 mat <- curves
 plot(NA, xlim = range(log(kseq, base = 10)),
      ylim = c(-15,0),
@@ -204,7 +307,7 @@ for (ii in 1:nsim) {
 }
 
 ## plot observed curves against quantiles
-ind <- 5
+ind <- 4
 mat <- depcurves
 plot(NA, xlim = range(log(kseq, base = 10)),
      ylim = c(-15,0),
@@ -229,7 +332,7 @@ polygon(c(log(kseq, 10), log(rev(kseq), 10)),
 ## 1: dependence makes detection of "anything" easier
 ## 2: dependence spreads evidence
 xpos <- rep(jax_bsbSingle$location$`1`, nsim)
-ind <- 5
+ind <- 1
 plot(x = xpos,
      y = log(c(pmat[ind,,]), 10), type = "n",
      ylab = expression(paste(log[10], "(", p, ")")),
@@ -295,7 +398,7 @@ for (ii in 1:nsim) {
 }
 
 ## plot observed curves against quantiles
-ind <- 3
+ind <- 2
 mat <- adjcurves
 plot(NA, xlim = range(log(kseq, base = 10)),
      ylim = c(-50,0),
