@@ -1,7 +1,6 @@
 ## recreate the code from the workshop here
 library(toyGenomeGenR)
 
-
 ## FUNCTIONS #########################################################
 ## custom plotting function with narrow margins
 narrowPlot <- function(xgrid, ygrid, main = "", xlab = "", ylab = "",
@@ -31,33 +30,54 @@ narrowPlot <- function(xgrid, ygrid, main = "", xlab = "", ylab = "",
 }
 
 ## quantile plot of central range
-addQuantPoly <- function(mat, qnts = c(0.005, 0.025, 0.25),
-                         kseq = exp(seq(-8, 8, by = 0.25)),
-                         labpos = c("left", "top"), ...) {
+addQuantLines <- function(mat, qnts = c(0.005, 0.025, 0.25),
+                          kseq = exp(seq(-8, 8, by = 0.25)),
+                          labpos = c("left", "top"), col = "gray",
+                          medcol = "black", ...) {
     for (qn in qnts) {
         polygon(log(c(kseq, rev(kseq)), base = 10),
                 c(apply(mat, 1, quantile,
                         probs = qn),
                   rev(apply(mat, 1, quantile,
                             probs = 1-qn))),
-                col = adjustcolor("gray", 0.25), border = NA)
-        if (labpos[1] == "left") {
-            xind <- 1
-            adj <- c(0, 0.5)
-        } else if (labpos[1] == "right") {
-            xind <- length(kseq)
-            adj <- c(1, 0.5)
-        }
-        if (labpos[2] == "top") {
-            yq <- 1-qn
-        } else if (labpos[2] == "bottom") {
-            yq <- qn
-        }
-        text(x = log(kseq[xind], 10),
-             y = quantile(mat[xind,], yq),
-             labels = 1-2*qn, adj = adj, ...)
+                border = col, lty = 3)
     }
-    lines(x = log(kseq, 10),
+    lines(x = log(kseq, 10), col = adjustcolor(medcol, 0.3),
+          lwd = 2,
+          y = apply(mat, 1, median))
+}
+
+## quantile plot of central range
+addQuantPoly <- function(mat, qnts = c(0.005, 0.025, 0.25),
+                         kseq = exp(seq(-8, 8, by = 0.25)),
+                         labpos = c("left", "top"), col = "gray",
+                         medcol = "black", labs = TRUE, ...) {
+    for (qn in qnts) {
+        polygon(log(c(kseq, rev(kseq)), base = 10),
+                c(apply(mat, 1, quantile,
+                        probs = qn),
+                  rev(apply(mat, 1, quantile,
+                            probs = 1-qn))),
+                col = adjustcolor(col, 0.25), border = NA)
+        if (labs) {
+            if (labpos[1] == "left") {
+                xind <- 1
+                adj <- c(0, 0.5)
+            } else if (labpos[1] == "right") {
+                xind <- length(kseq)
+                adj <- c(1, 0.5)
+            }
+            if (labpos[2] == "top") {
+                yq <- 1-qn
+            } else if (labpos[2] == "bottom") {
+                yq <- qn
+            }
+            text(x = log(kseq[xind], 10),
+                 y = quantile(mat[xind,], yq),
+                 labels = 1-2*qn, adj = adj, ...)
+        }
+    }
+    lines(x = log(kseq, 10), col = medcol,
           y = apply(mat, 1, median))
 }
 
@@ -255,7 +275,7 @@ if (!("chiCorrs.Rds" %in% list.files())) {
     precPvals <- replicate(5,
                            simplify2array(lapply(prec, simSplit,
                                                  nsim = 1e4,
-                                                 npop = 2.5e2)),
+                                                 npop = 94)),
                            simplify = FALSE)
     ## get correlation of chi transform by kappa
     chiCorrs <- simplify2array(lapply(precPvals,
@@ -281,10 +301,10 @@ if (!("chiCorrs.Rds" %in% list.files())) {
 } else {
     chiCordf <- readRDS("chiCorrs.Rds")
 }
-## fit 5th order polynomials
+## fit 10th order polynomials
 chiCorMods <- lapply(log(kseq), function(k) {
     lm(chicor ~ I(zcor^2) + I(zcor^4) + I(zcor^6) + I(zcor^8) +
-           I(zcor^10), data = chiCordf,
+           I(zcor^10) - 1, data = chiCordf,
        subset = abs(chiCordf$logkap - k)<0.0001)#$coefficients
 })
 
@@ -296,14 +316,17 @@ convertRho <- function(sigma, kapInd, models = chiCorMods) {
 }
 
 ## plot some example curves
-targKap <- 0
+targKap <- 8
 exDat <- chiCordf[abs(chiCordf$logkap - targKap) < 0.0005,]
+exMod <- chiCorMods[[which(abs(log(kseq) - targKap) < 0.0005)]]
 png(paste0("rhoVSr", targKap, ".png"), width = 2.5, height = 2.5,
     units = "in", res = 480)
 narrowPlot(xgrid = seq(0, 1, by = 0.25),
            ygrid = seq(0, 1, by = 0.25),
            xlab = expression(rho[ij]), ylab = expression(r[ij]))
 points(exDat$zcor, exDat$chicor, cex = 0.5)
+lines(corrs, predict(exMod, newdata = data.frame(zcor = corrs)),
+      col = "firebrick")
 dev.off()
 
 ## how good are these fits?
@@ -343,11 +366,16 @@ sd <- 0.3
 ns <- c(1, 5, 10, 15, 20)
 ## compute scores
 jax_scores <- sapply(jax_bsbChr$encodings, scoreAdditive)
+jax_indpCor <- popCorrelation(jax_bsbChr)
+kInds <- 1:length(kseq)
+#kInds <- which(sapply(chiCorMods,
+#                      function(mod) summary(mod)$r.squared) > 0.98)
 ## repeat generation and testing many times
 nsim <- 1e3
 nulls <- curves <- array(dim = c(length(ns), length(kseq), nsim))
 nullpmat <- pmat <- array(dim = c(length(ns), nrow(jax_scores),
                                   nsim))
+adjcurves <- array(dim = c(length(ns), length(kInds), nsim))
 set.seed(11200905)
 for (ii in 1:nsim) {
     for (jj in seq_along(ns)) {
@@ -360,8 +388,16 @@ for (ii in 1:nsim) {
         null <- apply(jax_scores, 1,
                       function(g) unirandsplit(x = rank(sample(trait)),
                                                g, n = 94))
+        padj <- sapply(
+            kInds,
+            function(ii) poolChiDep(p = ps,
+                                    kap = kseq[ii],
+                                    sigma = convertRho(jax_indpCor,
+                                                       ii),
+                                    method = "satterthwaite"))
         pools <- sapply(kseq, poolChi, p = ps)
         nullpl <- sapply(kseq, poolChi, p = null)
+        adjcurves[jj, , ii] <- padj
         curves[jj, , ii] <- pools
         nulls[jj, , ii] <- nullpl
         pmat[jj, , ii] <- ps
@@ -371,7 +407,7 @@ for (ii in 1:nsim) {
 }
 
 ## plot observed curves against quantiles
-ind <- 5
+ind <- 1
 mat <- curves
 png(paste0("wrkshpIndepCurves", ind, ".png"), width = 2.5,
     height = 2.5, units = "in", res = 480)
@@ -387,6 +423,35 @@ text(x = rep(3.95, 3), labels = quantLevs, cex = 0.6, xpd = NA,
      adj = c(0.2, 0.5))
 addQuantPoly(log(mat[ind,,], 10), kseq = kseq, cex = 0.6,
              labpos = c("right", "bottom"))
+dev.off()
+
+## look at adjustment in independent case (shouldn't change)
+ind <- 5
+png(paste0("wrkshpIndepCurvesadj", ind, ".png"), width = 2.5,
+    height = 2.5, units = "in", res = 480)
+quantLevs <- c("5%", "1%", "0.1%")
+narrowPlot(xgrid = seq(-3, 3, by = 1.5), xlim = c(-3.5, 3.5),
+           ygrid = seq(-16, 0, by = 4),
+           xlab = expression(log[10]~{"("~kappa~")"}),
+           ylab = expression(log[10]~{"("~p~")"}))
+abline(h = log(nullQuants[quantLevs, as.character(100)], 10),
+       lty = 2, col = "black")
+text(x = rep(3.95, 3), labels = quantLevs, cex = 0.6, xpd = NA,
+     y = log(nullQuants[quantLevs, as.character(100)], 10),
+     adj = c(0.2, 0.5))
+addQuantPoly(log(curves[ind,,], 10), qnts = c(0.025),
+             kseq = kseq, cex = 0.6, labpos = c("right", "bottom"),
+             col = "firebrick", medcol = "firebrick",
+             labs = FALSE)
+addQuantPoly(log(adjcurves[ind,,], 10), qnts = c(0.025),
+             kseq = kseq, cex = 0.6, labpos = c("right", "bottom"),
+             col = "steelblue", medcol = "steelblue",
+             labs = FALSE)
+if (ind == 5) {
+    legend("bottomright", legend = c("Adjusted", "Unadjusted"),
+           fill = adjustcolor(c("steelblue", "firebrick"), 0.4),
+           cex = 0.6)
+}
 dev.off()
 
 ## change dependence to a block structure
@@ -414,9 +479,6 @@ sd <- 0.3
 jax_scores <- sapply(jax_bsbBlock$encodings, scoreAdditive)
 ## repeat generation and testing many times
 nsim <- 1e3
-kInds <- 1:length(kseq)
-#kInds <- which(sapply(chiCorMods,
-#                      function(mod) summary(mod)$r.squared) > 0.98)
 curves <- array(dim = c(length(ns), length(kseq), nsim))
 pmat <- array(dim = c(length(ns), nrow(jax_scores), nsim))
 adjcurves <- array(dim = c(length(ns), length(kInds), nsim))
@@ -462,6 +524,35 @@ text(x = rep(3.95, 3), labels = quantLevs, cex = 0.6, xpd = NA,
      adj = c(0.2, 0.5))
 addQuantPoly(log(mat[ind,,], 10), kseq = kseq, cex = 0.6,
              labpos = c("left", "bottom"))
+dev.off()
+
+## look at adjustment in independent case (shouldn't change)
+ind <- 5
+png(paste0("wrkshpDepCurvesadj", ind, ".png"), width = 2.5,
+    height = 2.5, units = "in", res = 480)
+quantLevs <- c("5%", "1%", "0.1%")
+narrowPlot(xgrid = seq(-3, 3, by = 1.5), xlim = c(-3.5, 3.5),
+           ygrid = seq(-30, 0, by = 6),
+           xlab = expression(log[10]~{"("~kappa~")"}),
+           ylab = expression(log[10]~{"("~p~")"}))
+abline(h = log(nullQuants[quantLevs, as.character(100)], 10),
+       lty = 2, col = "black")
+text(x = rep(3.95, 3), labels = quantLevs, cex = 0.6, xpd = NA,
+     y = log(nullQuants[quantLevs, as.character(100)], 10),
+     adj = c(0.2, 0.5))
+addQuantPoly(log(curves[ind,,], 10), qnts = c(0.025),
+             kseq = kseq, cex = 0.6, labpos = c("right", "bottom"),
+             col = "firebrick", medcol = "firebrick",
+             labs = FALSE)
+addQuantPoly(log(adjcurves[ind,,], 10), qnts = c(0.025),
+             kseq = kseq, cex = 0.6, labpos = c("right", "bottom"),
+             col = "steelblue", medcol = "steelblue",
+             labs = FALSE)
+if (ind == 5) {
+    legend("bottomright", legend = c("Adjusted", "Unadjusted"),
+           fill = adjustcolor(c("steelblue", "firebrick"), 0.4),
+           cex = 0.6)
+}
 dev.off()
 
 ## plot p-value distributions by ind

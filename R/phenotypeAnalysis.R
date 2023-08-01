@@ -220,10 +220,10 @@ pooledadj <- sapply(1:length(kseq),
                                                       kapInd = ii))
                     })
 ## plot the adjusted curve
-png("FemPaigenCurveAdj.png", width = 3, height = 3, units = "in",
+png("FemPaigenCurveAdj2.png", width = 3, height = 3, units = "in",
     res = 480)
 narrowPlot(xgrid = seq(-3, 3, by = 1.5),
-           ygrid = seq(-80, 0, by = 20),
+           ygrid = seq(-4, 0, by = 1),
            xlim = c(-3.5, 3.5),
            xlab = expression(log[10]~{"("~kappa~")"}),
            ylab = expression(log[10]~{"("~p~")"}))
@@ -255,8 +255,22 @@ topSnps <- names(testSnps)[snpCols][pvalOrd[1:53]]
 ## where on the genome are these
 png("FemPaigenTable.png", width = 6, height = 3, units = "in",
     res = 480)
-par(mar = c(4.1, 4.1, 1.1, 1.1))
+dpar(mar = c(4.1, 4.1, 1.1, 1.1))
 plot(table(factor(snps[topSnps, "chr"],
+                  levels = c(as.character(1:19), "X"))),
+     xlab = "Chromosome", ylab = "Frequency")
+dev.off()
+## compare with paigen data
+png("FemPaigenTablePaper.png", width = 6, height = 3, units = "in",
+    res = 480)
+par(mar = c(4.1, 4.1, 1.1, 1.1))
+plot(table(factor(c(rep("1", 4), rep("2", 2), rep("3", 1),
+                    rep("4", 3), rep("5", 3), rep("6", 2),
+                    rep("7", 3), rep("8", 3), rep("9", 3),
+                    rep("10", 1), rep("11", 3), rep("12", 2),
+                    rep("13", 1), rep("14", 1), rep("15", 3),
+                    rep("16", 0), rep("17", 2), rep("18", 1),
+                    rep("19", 4), rep("X", 1)),
                   levels = c(as.character(1:19), "X"))),
      xlab = "Chromosome", ylab = "Frequency")
 dev.off()
