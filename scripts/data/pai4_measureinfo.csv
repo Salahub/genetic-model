@@ -1,0 +1,5 @@
+measnum,projsym,mpdsector,seriestype,keymeasnum,varname,descrip,descrip2,units,datatype,magnitude,method,intervention,paneldesc,sextested,ageweeks,granularity,sourceparm,projyear,extname,reference,association,nstrainstested,listorder,label,supplemental,native_method,is_covar,is_measure,upload_factors,file_column,is_baseline,is_control,private
+19701,Paigen4,css,,19701,HDLC,HDL cholesterol (plasma),,mg/dL,,,lipid profile,,inbred w/CC7,both,10wks,animal,,2002,,,,43,1,,,,,True,,,False,False,
+19702,Paigen4,css,,19702,CHOL,total cholesterol (plasma),,mg/dL,,,lipid profile,,inbred w/CC7,both,10wks,animal,,2002,,,,43,2,,,,,True,,,False,False,
+19703,Paigen4,css,,19703,nonHDL,"non-HDL cholesterol (plasma), log transformed",,mg/dL,,,lipid profile,,inbred w/CC7,both,10wks,animal,,2002,,,,43,3,,,,,True,,,False,False,
+19704,Paigen4,css,,19704,TG,"triglycerides (plasma, 4h fast)",,mg/dL,,,lipid profile,,inbred w/CC7,both,10wks,animal,,2002,,,,43,4,,,,,True,,,False,False,

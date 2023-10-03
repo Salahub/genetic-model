@@ -11,7 +11,7 @@ provided in this package, with demos to guide users. In addition, this
 package provides processed versions of almost a dozen data sets
 recording genetic measurements in backcross experiments in mice.
 
-## R
+## Scripts
 
 The package is applied in the numerous scripts contained in the other
 directory, and several supporting scripts to extract and process the

@@ -1,0 +1,4 @@
+measnum,projsym,mpdsector,seriestype,keymeasnum,varname,descrip,descrip2,units,datatype,magnitude,method,intervention,paneldesc,sextested,ageweeks,granularity,sourceparm,projyear,extname,reference,association,nstrainstested,listorder,label,supplemental,native_method,is_covar,is_measure,upload_factors,file_column,is_baseline,is_control,private
+44601,HMDPpheno1,css,,44601,BMD_body,"whole body bone mineral density (BMD; skull, lumbar spine, left femur excluded)",,g/cm<sup>2</sup>,,,DXA,,HMDP w/par,m,16wks,animal,,2011,,,,96,1,,,,,True,,,False,False,
+44602,HMDPpheno1,css,,44602,BMD_femur,bone mineral density (BMD) of left femur,,g/cm<sup>2</sup>,,,DXA,,HMDP w/par,m,16wks,animal,,2011,,,,96,2,,,,,True,,,False,False,
+44603,HMDPpheno1,css,,44603,BMD_spine,bone mineral density (BMD) of lumbar spine,,g/cm<sup>2</sup>,,,DXA,,HMDP w/par,m,16wks,animal,,2011,,,,96,3,,,,,True,,,False,False,

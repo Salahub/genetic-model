@@ -1,0 +1,12 @@
+measnum,projsym,mpdsector,seriestype,keymeasnum,varname,descrip,descrip2,units,datatype,magnitude,method,intervention,paneldesc,sextested,ageweeks,granularity,sourceparm,projyear,extname,reference,association,nstrainstested,listorder,label,supplemental,native_method,is_covar,is_measure,upload_factors,file_column,is_baseline,is_control,private
+47401,Brugnara1,css,,47401,sodium,RBC sodium cation content (mmol/kg hemoglobin),,mmol/kg,,,ion transport assessment,,inbred,both,8wks,animal,,2013,,,,10,1,,,,,True,,,False,False,
+47402,Brugnara1,css,,47402,potassium,RBC potassium cation content (mmol/kg hemoglobin),,mmol/kg,,,ion transport assessment,,inbred,both,8wks,animal,,2013,,,,10,2,,,,,True,,,False,False,
+47403,Brugnara1,css,,47403,magnesium,RBC magnesium cation content (mmol/kg hemoglobin),,mmol/kg,,,ion transport assessment,,inbred,both,8wks,animal,,2013,,,,10,3,,,,,True,,,False,False,
+47404,Brugnara1,css,,47404,K_Cl,RBC potassium chloride cotransport (KCC; per 10<sup>13</sup> cells),,mmol&sdot;h,,,ion transport assessment,,inbred,both,8wks,animal,,2013,,,,10,4,,,,,True,,,False,False,
+47405,Brugnara1,css,,47405,Na_K_pump,RBC sodium-potassium pump (Na-K; per 10<sup>13</sup> cells),,mmol&sdot;h,,,ion transport assessment,,inbred,both,8wks,animal,,2013,,,,10,5,,,,,True,,,False,False,
+47406,Brugnara1,css,,47406,Na_H_exchange,RBC sodium-hydrogen exchanger (NHE1; per 10<sup>13</sup> cells),,mmol&sdot;h,,,ion transport assessment,,inbred,both,8wks,animal,,2013,,,,10,6,,,,,True,,,False,False,
+47407,Brugnara1,css,,47407,gardos_channel,RBC calcium-activated potassium channel (KCNN4),,mmol/L&sdot;min,,,ion transport assessment,,inbred,both,8wks,animal,,2013,,,,10,7,,,,,True,,,False,False,
+47408,Brugnara1,css,,47408,MCV,mean RBC corpuscular volume (MCV),,fL,,,complete blood count,,inbred,both,8wks,animal,,2013,,,,10,8,,,,,True,,,False,False,
+47409,Brugnara1,css,,47409,CHCM,RBC corpuscular hemoglobin concentration mean (CHCM),,g/dL,,,complete blood count,,inbred,both,8wks,animal,,2013,,,,10,9,,,,,True,,,False,False,
+47410,Brugnara1,css,,47410,MCH,mean RBC corpuscular hemoglobin conent (MCH),,pg,,,complete blood count,,inbred,both,8wks,animal,,2013,,,,10,10,,,,,True,,,False,False,
+47411,Brugnara1,css,,47411,retic,reticulocyte differential (Retic; percentage of total RBC),,%,,,complete blood count,,inbred,both,8wks,animal,,2013,,,,10,11,,,,,True,,,False,False,
