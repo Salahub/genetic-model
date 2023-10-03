@@ -18,19 +18,19 @@ directory, and several supporting scripts to extract and process the
 package data are provided as well. Described broadly, these scripts
 are
 
-	- **mgiConvert.R**: use API calls to https://phenome.jax.org/ and
+- **mgiConvert.R**: use API calls to https://phenome.jax.org/ and
       data extracted from https://www.informatics.jax.org/ to pull
 	  phenotype and genotype data from the Jackson Lab databases and
       convert them to population and genome objects
-	- **mgiTests.R**: perform simulations based on the Jackson Lab
+- **mgiTests.R**: perform simulations based on the Jackson Lab
 	  data, corresponds with Section 5.6 of the thesis and contains
 	  some additional investigations not explored in the thesis
-	- **modelScheme.R**: draws the model diagram in Figure 5.1
-	- **literatureSettings.R**: uses toyGenomeGenR to replicate
+- **modelScheme.R**: draws the model diagram in Figure 5.1
+- **literatureSettings.R**: uses toyGenomeGenR to replicate
 	  settings discussed in the literature of effective dimension
-	- **phenoTypeAnalysis.R**: the script used to complete the example
+- **phenoTypeAnalysis.R**: the script used to complete the example
 	  at the end of Chapter 6 of the thesis
-	- **adjustingPooledChi.R**: the script showing the early
+- **adjustingPooledChi.R**: the script showing the early
 	  exploration and fitting of Chapter 6
 
 The data files either store output or are reference values for these
