@@ -17,6 +17,7 @@ The package is applied in the numerous scripts contained in the other
 directory, and several supporting scripts to extract and process the
 package data are provided as well. Described broadly, these scripts
 are
+
 	- **mgiConvert.R**: use API calls to https://phenome.jax.org/ and
       data extracted from https://www.informatics.jax.org/ to pull
 	  phenotype and genotype data from the Jackson Lab databases and
@@ -31,6 +32,7 @@ are
 	  at the end of Chapter 6 of the thesis
 	- **adjustingPooledChi.R**: the script showing the early
 	  exploration and fitting of Chapter 6
+
 The data files either store output or are reference values for these
 scripts.
 
