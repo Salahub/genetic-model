@@ -9,7 +9,10 @@ package contained in the toyGenomeGenR directory. Numerous functions to
 generate, cross, subset, and otherwise manipulate genomes are all
 provided in this package, with demos to guide users. In addition, this
 package provides processed versions of almost a dozen data sets
-recording genetic measurements in backcross experiments in mice.
+recording genetic measurements in backcross experiments in mice. The
+package can be downloaded via the command
+`install_github("Salahub/genetic-model", subdir="toyGenomeGenR")`
+using `install_github` from the `devtools` package in R.
 
 ## Scripts
 
