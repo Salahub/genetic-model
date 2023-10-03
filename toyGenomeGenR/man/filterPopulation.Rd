@@ -4,7 +4,7 @@
 \alias{filterPopulation}
 \title{Remove encodings from a `population` based on a rule}
 \usage{
-filterPopulation(population, rule = function(mat) any(is.na(mat)))
+filterPopulation(population, rule = function(mat) !any(is.na(mat)))
 }
 \arguments{
 \item{population}{`population` with encodings to be filtered}
