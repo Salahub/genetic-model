@@ -1,4 +1,4 @@
-## load functions, set image output directory
+## load functions
 library(toyGenomeGenR)
 
 ## SIMULATIONS #######################################################

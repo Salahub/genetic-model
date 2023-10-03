@@ -1,7 +1,7 @@
 ## load package with data, genome functions
 library(toyGenomeGenR)
 
-## FUNCTIONS TO ANALYZE, SIMULATE MGI PANELS #########################
+## FUNCTIONS #########################################################
 ## drop bad panelists
 mgiDropZeroPanelist <- function(panel) {
     filterPopulation(panel,
@@ -24,14 +24,15 @@ simulateMGICor <- function(panel, npop = length(panel$encodings),
                            setting = c("backcross", "intercross"),
                            asArray = FALSE) {
     setting <- match.arg(setting) # identify case
+    ## set up maternal, paternal, first generation cross genomes
     M <- with(panel, makeGenome(location, alleles, chromosome,
                                 markerPureDom(length(chromosome)))
     F <- with(panel, makeGenome(location, alleles, chromosome,
                                 markerPureRec(length(chromosome)))
     F1 <- do.call(sex, args = c(genome1 = list(M), genome2 = list(F),
                                 meioseArgs))
-    allcors <- vector("list", reps)
-    if (setting == "intercross") {
+    allcors <- vector("list", reps) # storage
+    if (setting == "intercross") { # perform repeated crosses
         for (ii in 1:reps) {
             pop <- asPopulation(replicate(npop, sex(F1, F1),
                                           simplify = FALSE))
@@ -109,8 +110,8 @@ corCross <- function(x, ntwo, npop = 80) {
 nsim <- 10000 # number of simulated crosses
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
 
-## FILTERING AND DISPLAYING A SUBSET #################################
 
+## FILTERING AND DISPLAYING A SUBSET #################################
 ## load in the pre-processed panels, focusing on a few with large
 ## samples when controlling for complete data alone
 data(jax_bsb); data(jax_bss); data(ucla_bsb)
@@ -127,7 +128,6 @@ panelsTheory <- mapply(theoryCorrelation, genome = panelsComplete,
 
 
 ## SIMULATIONS #######################################################
-
 ## first: entire panel plots
 pnlnm <- "ucla_bsb"
 pnl <- panelsComplete[[pnlnm]]
@@ -158,7 +158,7 @@ for (ii in 1:nsim) { # accumulate
 }
 diag(pnlQuants) <- nsim/2
 
-## simulated correlation example
+## simulated correlation example (Figs 5.4, 5.5)
 png(paste0(gsub("\\.", "", pnlnm), "_sim.png"),
     width = 540, height = 540, type = "cairo")
 par(mar = c(0.1,0.9,0.9,0.1))
@@ -167,7 +167,7 @@ corrImg(pnlSim[[1]], col = pal, breaks = seq(-1, 1, length.out = 42),
 addChromosomeLines(pnl)
 dev.off()
 
-## quantiles over 10000 simulations
+## quantiles over 10000 simulations (Figs 5.4, 5.5)
 png(paste0(gsub("\\.", "", pnlnm), "_quant.png"),
     width = 540, height = 540, type = "cairo")
 par(mar = c(0.1,0.9,0.9,0.1))
@@ -223,50 +223,15 @@ uclaSimCor <- simulateMGICor(bsbSubset$ucla,
                              npop = length(bsbSubset$ucla$encodings),
                              reps = nsim, asArray = TRUE)
 
-## modified scatterplot matrix showing the distribution and mean of
-## the correlation (change ncom = 2 for 2x2, ncom = 8 chromosomes 2 & 4)
-ncom <- length(bsbSubset$jax$marker) # 8 # 2 # CHANGE TO CHANGE DISPLAY
-#res <- 720 # better for big # 540 # better for 2x2
+##' this section provides the code to create Figure 5.7: a modified
+##' scatterplot matrix communicating the distribution of correlation
+##' over repeated simulation alongside the observed values
+ncom <- length(bsbSubset$jax$marker)
+ppi <- 150
 pal <- colorRampPalette(c("steelblue", "white", "firebrick"))(41)
-#png("bsbCorrDist.png", width = res, height = res, type = "cairo")
-## width/height = 10 for big, 2.5 for 2x2
-png("bsbCorrDist.png", width = 8, height = 8, units = "in", res = ppi,
-    type = "cairo")
 markerNames <- rownames(bsbSubset$jax$marker)
 cuts <- seq(-1, 1, length.out = 42)
-par(mfrow = c(ncom,ncom), mar = c(0.1,0.1,0.1,0.1))
-for (ii in 1:ncom) { # 7:8 for 2x2
-    for (jj in 1:ncom) { # 7:8 for 2x2
-        tempmean <- mean(bsbSimCor[ii,jj,])
-        if (ii == jj) {
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            text(0.5, 0.5, markerNames[ii], cex = 1.5)
-        } else if (ii < jj) {
-            par(mar = c(2.1,0.5,0.5,0.5))
-            tempdens <- zeroDens(density(bsbSimCor[ii,jj,]))
-            plot(NA, xlim = c(-1,1), ylim = c(0,7),
-                 yaxt = "n", xlab = "", ylab = "")
-            polygon(tempdens, col = "gray70")
-            abline(v = 0)
-            abline(v = bsbSubTheory[ii,jj], col = "firebrick",
-                   lty = 1)
-            abline(v = tempmean, lty = 2)
-        } else {
-            par(mar = c(0.1,0.1,0.1,0.1))
-            plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
-                 xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-            rect(0, 0, 1, 1,
-                 col = pal[sum(cuts < tempmean)])
-            text(0.5, 0.5, round(tempmean, 2), cex = 2)
-        }
-    }
-}
-dev.off()
-
-## modified scatterplot matrix showing the distribution of the mean
-## of both correlations across all simulations
-#png("bsbCorrTest.png", width = 720, height = 720, type = "cairo")
+## start device
 png("bsbCorrTest.png", width = 8, height = 8, units = "in", res = ppi,
     type = "cairo")
 markerNames <- bsbSubset$jax$marker
@@ -281,11 +246,11 @@ for (ii in 1:ncom) {
         tempmean <- mean(c(bsbJaxCor[ii,jj], bsbUclaCor[ii,jj]))
         ## simulated means of paired samples
         tempcomb <- 0.5*jaxSimCor[ii,jj,] + 0.5*uclaSimCor[ii,jj,]
-        if (ii == jj) {
+        if (ii == jj) { # along the diagonal: marker names
             plot(NA, xlim = c(0,1), ylim = c(0,1), bty = "n",
                  xaxt = "n", yaxt = "n", xlab = "", ylab = "")
             text(0.5, 0.5, markerNames[ii], cex = 1.5)
-        } else if (ii < jj) {
+        } else if (ii < jj) { # above the diagonal: observed dists
             par(mar = c(2.1,0.5,0.5,0.5))
             tempdens <- density(tempcomb)
             plot(NA, xlim = range(tempdens$x), ylim = range(tempdens$y),
@@ -298,7 +263,7 @@ for (ii in 1:ncom) {
             abline(v = bsbJaxCor[ii,jj], lty = 2)
             abline(v = bsbUclaCor[ii,jj], lty = 4)
             abline(v = tempmean, col = "firebrick", lwd = 2)
-        } else {
+        } else { # below the diagonal: observed quantile
             tempq <- sum(tempcomb <= mean(c(bsbJaxCor[ii,jj],
                                            bsbUclaCor[ii,jj])))
             par(mar = c(0.1,0.1,0.1,0.1))
@@ -320,7 +285,6 @@ dev.off()
 
 
 ## OTHER INVESTIGATIONS INTO CORRELATON ##############################
-
 ## trying to build the empirical demonstration of correlation based on
 ## the count of crossovers/theoretical correlation
 
@@ -445,7 +409,6 @@ for (ii in seq_along(nCross)) {
 }
 
 ## all together
-#png("jaxcrossCurves.png", width = 540, height = 540, type = "cairo")
 png("jaxcrossCurves.png", width = side, height = side,
     units = "in", res = ppi, type = "cairo")
 plot(NA, xlim = range(ntwoSeq),

@@ -1,7 +1,0 @@
-measnum,projsym,mpdsector,seriestype,keymeasnum,varname,descrip,descrip2,units,datatype,magnitude,method,intervention,paneldesc,sextested,ageweeks,granularity,sourceparm,projyear,extname,reference,association,nstrainstested,listorder,label,supplemental,native_method,is_covar,is_measure,upload_factors,file_column,is_baseline,is_control,private
-55901,GMC10,css,timecourse,55901,bw_13wk,body weight,at age 12-13wks,g,,,body weight,,inbred w/CC8,both,12-13wks,animal,,2018,,,,8,1,12-13wks,,,,True,,,False,False,
-55902,GMC10,css,timecourse,55901,bw_19wk,body weight,at age 18-19wks,g,,,body weight,,inbred w/CC8,both,18-19wks,animal,,2018,,,,8,2,18-19wks,,,,True,,,False,False,
-55911,GMC10,css,timecourse,55911,fat_13wk,"fat tissue mass, whole body with head (NMR)",at age 12-13wks,g,,,NMR,,inbred w/CC8,both,12-13wks,animal,,2018,,,,8,11,12-13wks,,,,True,,,False,False,
-55912,GMC10,css,timecourse,55911,fat_19wk,"fat tissue mass, whole body with head (NMR)",at age 18-19wks,g,,,NMR,,inbred w/CC8,both,18-19wks,animal,,2018,,,,8,12,18-19wks,,,,True,,,False,False,
-55921,GMC10,css,timecourse,55921,lean_13wk,"lean tissue mass, whole body with head (NMR)",at age 12-13wks,g,,,NMR,,inbred w/CC8,both,12-13wks,animal,,2018,,,,8,21,12-13wks,,,,True,,,False,False,
-55922,GMC10,css,timecourse,55921,lean_19wk,"lean tissue mass, whole body with head (NMR)",at age 18-19wks,g,,,NMR,,inbred w/CC8,both,18-19wks,animal,,2018,,,,8,22,18-19wks,,,,True,,,False,False,

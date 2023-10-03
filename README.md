@@ -15,9 +15,27 @@ recording genetic measurements in backcross experiments in mice.
 
 The package is applied in the numerous scripts contained in the other
 directory, and several supporting scripts to extract and process the
-package data are provided as well.
-For example, scripts **mgiFunctions.R** and **mgiTests.R** are used to
-extract, process, and display data from the MGI database at
-http://www.informatics.jax.org/, the source of the package data sets.
-**simulationRedo.R** contains an implementation of the genetic model and a number of small simulations using the model, respectively.
-**modelScheme.R** is rather irrelevant, it's simply an image that summarizes the model.
+package data are provided as well. Described broadly, these scripts
+are
+	- **mgiConvert.R**: use API calls to https://phenome.jax.org/ and
+      data extracted from https://www.informatics.jax.org/ to pull
+	  phenotype and genotype data from the Jackson Lab databases and
+      convert them to population and genome objects
+	- **mgiTests.R**: perform simulations based on the Jackson Lab
+	  data, corresponds with Section 5.6 of the thesis and contains
+	  some additional investigations not explored in the thesis
+	- **modelScheme.R**: draws the model diagram in Figure 5.1
+	- **literatureSettings.R**: uses toyGenomeGenR to replicate
+	  settings discussed in the literature of effective dimension
+	- **phenoTypeAnalysis.R**: the script used to complete the example
+	  at the end of Chapter 6 of the thesis
+	- **adjustingPooledChi.R**: the script showing the early
+	  exploration and fitting of Chapter 6
+The data files either store output or are reference values for these
+scripts.
+
+## effectiveDim
+
+This directory contains some short code files used to investigate the
+computation of effective dimension in genetic data. This was covered
+only briefly in the thesis, and generally seems like a bad idea.

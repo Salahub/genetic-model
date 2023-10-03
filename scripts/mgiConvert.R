@@ -139,10 +139,10 @@ regularSample <- function(markers, n = 40) {
     rng <- range(markers$loc)
     evenBrks <- seq(rng[1], rng[2], length.out = n)
     nearestInd <- numeric(n)
-    minDiff <- rep(Inf, n)
+    minDiff <- rep(Inf, n) # inf values are never minimal
     for (ii in seq_along(pos)) {
-        diffs <- abs(evenBrks - pos[ii])
-        closest <- which.min(diffs)
+        diffs <- abs(evenBrks - pos[ii]) # compare breaks to positions
+        closest <- which.min(diffs) # get closest
         if (minDiff[closest] > diffs[closest]) {
             minDiff[closest] <- diffs[closest]
             nearestInd[closest] <- ii
@@ -153,12 +153,11 @@ regularSample <- function(markers, n = 40) {
 
 ## READ/PROCESS MGI DATA #############################################
 
-##' another source of experimental data is the MGI website, which has
-##' a number of "panels" of mice generated in experimental work and
-##' then measured, typically the crosses used are backcrosses
-##' the functionality to extract all of this and the reference website
-##' are in the simulationFunctions file, we start by loading the MGI
-##' provided database of markers (which is rather large)
+##' the MGI website, has a number of "panels" of mice generated in
+##' experimental work and then measured, typically the crosses used
+##' are backcrosses
+##' start by loading the MGI provided database of markers (which is
+##' rather large)
 mgiMarkers <- readMGIlists() # descriptions of all markers
 
 ##' filter and sample these by chromosome to pull genotype data
@@ -191,18 +190,22 @@ mgiRegSamps$end <- mgiRegSamps$beg + intLen
 phenAPIRequests <- with(mgiRegSamps, makeAPIreq(beg, end, chr))
 ##' pull the data
 phenData <- vector(mode = "list", length = length(phenAPIRequests))
-names(phenData) <- phenAPIRequests
-hits <- logical(length(phenData))
+names(phenData) <- phenAPIRequests # name with query
+hits <- logical(length(phenData)) # did the query at ii succeed?
 for (ii in seq_along(phenAPIRequests)) {
     cat(ii, "of", length(phenAPIRequests), ":\n  ")
-    curr <- url(phenAPIRequests[ii])
-    phenData[[ii]] <- scan(curr, sep = "\n", what = "character")
+    curr <- url(phenAPIRequests[ii]) # open connection
+    phenData[[ii]] <- scan(curr, sep = "\n", what = "character") #read
     hits[ii] <- length(phenData[[ii]]) > 1
-    close(curr)
+    close(curr) # close connection
 }
 ## process the API pulls
 phenDataMats <- lapply(phenData[hits], processAPIout)
-## compute centiMorgans
+
+##' compute centiMorgans: this requires interpolation, as the API
+##' requests work on the scale of base pairs directly, and so the
+##' cM values at base pairs surrounding a marker have to be used to
+##' approximate the cM position of the marker
 mgiCMrate <- diff(mgiRegSamps$loc)/diff(mgiRegSamps$beg)
 mgiCMrate[mgiCMrate < 0] <- mgiCMrate[which(mgiCMrate < 0) - 1]
 mgiCMrate <- c(mgiCMrate, mgiCMrate[length(mgiCMrate)])
@@ -211,7 +214,7 @@ phencMs <- mapply(function(mat, beg, rt, loc) (as.numeric(mat[, "bp38"]) - beg)*
                   mgiCMrate[hits], mgiRegSamps$loc[hits])
 ## put it in a single matrix
 phenDataFull <- cbind(cMs = unlist(phencMs), do.call(rbind, phenDataMats))
-## drop duplicates (overlapping requests)
+## drop duplicates (some requests overlap)
 phenDataFull <- phenDataFull[match(unique(phenDataFull[, "rs"]),
                                    phenDataFull[, "rs"]),]
 rownames(phenDataFull) <- NULL

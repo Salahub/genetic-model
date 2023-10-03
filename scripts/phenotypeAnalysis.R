@@ -77,7 +77,7 @@ satterApprox <- function(qs, sigma, kap) {
     c <- varx/(2*ex)
     pchisq(sum(qs)/c, df = f, lower.tail = FALSE)
 }
-## what does this do to pooled p-values?
+## write a wrapper that incorporates both
 poolChiDep <- function(ps, kap, sigma,
                        method = c("gamma", "satterthwaite")) {
     chis <- qchisq(ps, df = kap, lower.tail = FALSE)
@@ -92,9 +92,11 @@ poolChiDep <- function(ps, kap, sigma,
 }
 
 ## and a bin splitting p-value
+## this is a faster implementation of the recursive binning of marbR
+## written custom for this application
 unirandsplit <- function(x, g, n, lim = 10) {
     brk1 <- sample(lim:(n-lim), 1)
-    if (brk1-2*lim <= 0) {
+    if (brk1-2*lim <= 0) { # maintain minimum bin size
         brk2 <- sample(seq(brk1+lim, n-lim, by = 1), 1)
         brks <- c(0, brk1, brk2, n)
     } else if (n-brk1-2*lim <= 0) {
@@ -113,7 +115,10 @@ unirandsplit <- function(x, g, n, lim = 10) {
 }
 
 
-## load conversion data
+##' load the data necessary to fit models that convert the observed
+##' correlations between markers into the correlation between
+##' chi-transformed random variables so the Satterthwaite
+##' approximation can be used
 kseq <- exp(seq(-8, 8, by = 0.1))
 chiCordf <- readRDS("chiCorrs.Rds")
 ## fit conversion models
@@ -122,8 +127,7 @@ chiCorMods <- lapply(log(kseq), function(k) {
            I(zcor^10), data = chiCordf,
        subset = abs(chiCordf$logkap - k)<0.0001)#$coefficients
 })
-
-## use these to convert a rho matrix to r for a kappa
+## a wrapper function which uses these models to convert values
 convertRho <- function(sigma, kapInd, models = chiCorMods) {
     matrix(predict(chiCorMods[[kapInd]],
                    newdata = data.frame(zcor = c(sigma))),
@@ -140,7 +144,8 @@ snps <- snps[order(as.numeric(snps[, "cMs"])),] # order by cm dists
 snps <- snps[order(snps[, "chr"]),] # return chromosome order
 
 
-## example: paigen data ##############################################
+## EXAMPLE: PAIGEN DATA ##############################################
+## read in phenotype data
 pheno <- read.csv("./data/Paigen4_animaldata.csv")
 
 ## join to snps
@@ -148,48 +153,56 @@ phenoInds <- 1:7
 phenoGeno <- joinPhenoGeno(pheno, snps, phenoCols = 1:7)
 ## filter out SNPs by distributions
 nlev <- sapply(phenoGeno, function(col) sum(levels(col) != ""))
-phenoGeno <- phenoGeno[,nlev != 1]
-## inds to aid in selection
+phenoGeno <- phenoGeno[, nlev != 1]
+## indexes to aid in later selection
 colChr <- snps[names(phenoGeno)[-phenoInds], "chr"]
 colRd <- snps[names(phenoGeno)[-phenoInds], "requested"]
 tabs <- sapply(phenoGeno, table)
 
-## a few others: most complete per request
+##' aim for data which is not identical for all individuals in the
+##' data by looking at which markers are least uniform by API
+##' request ("read")
 set.seed(15372023)
 byRead <- sapply(split(sapply(tabs, sum)[-phenoInds], colRd),
                  function(k) names(k)[which.max(k)])
 pGbyR <- phenoGeno[, c(names(phenoGeno)[phenoInds], byRead)]
-## random subset of these
+## select a random subset of these
 pGbyRsub <- cbind(pGbyR[, phenoInds],
                   pGbyR[ , sample((max(phenoInds)+1):ncol(pGbyR),
                                   40)])
-## k most complete by chromosome
-k <- 1
+
+##' perform the same analysis to get the most varied and complete by
+##' chromosome, select the top k
+k <- 1 # for the paper, one was chosen to get independent markers
 byChr <- sapply(split(sapply(tabs, sum)[-phenoInds], colChr),
                 function(k) names(k)[order(k, decreasing = TRUE)[1:1]])
-pGbyChr <- phenoGeno[, c(names(phenoGeno)[phenoInds],
-                         byChr)]
+pGbyChr <- phenoGeno[, c(names(phenoGeno)[phenoInds], byChr)]
 
-## get snp column indices (female only)
+## use these to get snp column indices (female only)
 testSnps <- pGbyR[pGbyR$sex == "f",]
 snpCols <- (ncol(pheno)+1):(ncol(testSnps))
-## order to restore chromosome and locations
+## order to restore chromosome ordering and locations
 snpOrder <- rownames(snps)[rownames(snps) %in%
                            names(testSnps)[snpCols]]
 testSnps <- testSnps[, c(names(testSnps)[1:ncol(pheno)],
                          snpOrder)]
-## continuous target: kruskal-wallis one-way anova test
+## apply random splitting to obtain a p-value
 tests <- lapply(snpCols,
                 function(ind) unirandsplit(rank(testSnps[, "nonHDL"]),
                                            g = testSnps[, ind],
                                            n = nrow(testSnps)))
 ## extract p-values
 pvals <- unlist(tests)
-## get a sequence of kappas for p-values
+
+##' next: kappa values are swept in the chi-squared pooled p-value
+##' to obtain a sequence of kappas which are most powerful for the
+##' obtained p-values
 nullQuants <- readRDS("curveMinQuantiles.Rds") # comparison values
-quantLevs <- c("5%")
-kseq <- exp(seq(-8, 8, by = 0.1))
-pooled <- sapply(kseq, poolChi, p = pvals)
+quantLevs <- c("5%") # quantiles
+kseq <- exp(seq(-8, 8, by = 0.1)) # sweep values
+pooled <- sapply(kseq, poolChi, p = pvals) # pooled p-values
+## not included in the thesis: unadjusted curves of the pooled
+## p-values by kappa
 png("FemPaigenCurve.png", width = 3, height = 3, units = "in",
     res = 480)
 narrowPlot(xgrid = seq(-3, 3, by = 1.5),
@@ -205,21 +218,23 @@ text(x = rep(3.95, 3), labels = quantLevs, cex = 0.6, xpd = NA,
      adj = c(0.2, 0.5))
 dev.off()
 
-## compute the correlation matrix
+##' now: perform the Satterthwaite adjustment
+##' compute the correlation matrix
 obscorrs <- cor(sapply(testSnps[, snpCols], as.numeric),
                 use = "pairwise.complete.obs")
 chrs <- snps[names(testSnps)[snpCols], "chr"]
 locs <- split(as.numeric(snps[names(testSnps)[snpCols], "cMs"]),
               chrs)
 thcorrs <- theoryCorrelation(list(location = locs, chromosome = chrs))
-## adjusted p-value computation
+## apply the adjusted p-value function
 pooledadj <- sapply(1:length(kseq),
                     function(ii) {
                         poolChiDep(ps = pvals, kap = kseq[ii],
                                    sigma = convertRho(thcorrs,
                                                       kapInd = ii))
                     })
-## plot the adjusted curve
+
+## the adjusted curve corresponds with Figure 6.9
 png("FemPaigenCurveAdj2.png", width = 3, height = 3, units = "in",
     res = 480)
 narrowPlot(xgrid = seq(-3, 3, by = 1.5),
@@ -235,7 +250,7 @@ text(x = rep(3.95, 3), labels = quantLevs, cex = 0.6, xpd = NA,
      adj = c(0.2, 0.5))
 dev.off()
 
-## plot chi 0.18 quantile transformations of p-values
+## plot chi 0.18 quantile transformations of p-values (Figure 6.10(b))
 png("FemPaigenPvalCutoff.png", width = 3, height = 3, units = "in",
     res = 480)
 narrowPlot(xgrid = seq(0, 1, by = 0.2),
@@ -275,6 +290,11 @@ plot(table(factor(c(rep("1", 4), rep("2", 2), rep("3", 1),
      xlab = "Chromosome", ylab = "Frequency")
 dev.off()
 
+
+## the next examples are not included in the thesis: the example above
+## was not cherry picked, but it was realized a more complete
+## exploration of this first example would be more meaningful than
+## the scattershot exploration of several
 ## example: coat colour data #########################################
 ## coat data
 pheno <- read.csv("./data/strainCoats.csv")
