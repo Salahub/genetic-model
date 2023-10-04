@@ -43,4 +43,4 @@ scripts.
 
 This directory contains some short code files used to investigate the
 computation of effective dimension in genetic data. This was covered
-only briefly in the thesis, and generally seems like a bad idea.
+only briefly in my thesis, and generally seems like a bad idea.
