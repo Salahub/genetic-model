@@ -87,7 +87,7 @@ poolChiDep <- function(ps, kap, sigma,
     } else if (method == "satterthwaite") {
         satterApprox(chis, sigma, kap)
     } else {
-        stop("Method must be one of 'gamma' and 'satterthwaite'")
+        stop("Method must be one of 'gamma' or 'satterthwaite'")
     }
 }
 
