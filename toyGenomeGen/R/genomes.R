@@ -122,25 +122,30 @@ checkGenome <- function(genome) {
     if (sort(names(genome)) != c("alleles", "chromosome", "location",
                                  "encoding")) {
         isgen <- FALSE
-        cat("Slots namely incorrectly or missing\n")
-    } else if (!is.list(genome$alleles) | # check types of elements
+        message("Slots named incorrectly or missing\n")
+    }
+    if (!is.list(genome$alleles) | # check types of elements
                !is.vector(genome$chromosome) |
                !is.list(genome$location) |
                !is.matrix(genome$encoding)) {
         isgen <- FALSE
-        cat("Slots contain data of the incorrect type\n")
-    } else if (length(genome$alleles) != nrow(genome$encoding)) {
+        message("Slots contain data of the incorrect type\n")
+    }
+    if (length(genome$alleles) != nrow(genome$encoding)) {
         isgen <- FALSE
-        cat("Number of alleles does not match encoding\n")
-    } else if (!identical(table(genome$chromosome),
+        message("Number of alleles does not match encoding\n")
+    }
+    if (!identical(table(genome$chromosome),
                           sapply(genome$location, length))) {
         isgen <- FALSE
-        cat("Locations do not match number of markers by chromosome\n")
-    } else if (length(genome$alleles) != length(genome$chromosome)) {
+        message("Locations do not match number of markers by chromosome\n")
+    }
+    if (length(genome$alleles) != length(genome$chromosome)) {
         isgen <- FALSE
-        cat("Distances and alleles imply differing counts of markers\n")
-    } else if (!is.factor(genome$chromosome)) {
-        cat("Chromosome is not an ordered factor\n")
+        message("Distances and alleles imply differing counts of markers\n")
+    }
+    if (!is.factor(genome$chromosome)) {
+        message("Chromosome is not an ordered factor\n")
     }
     isgen
 }
@@ -193,7 +198,7 @@ asGenome <- function(df, alleles, values = c(1,0),
     df$pv[df$pv %in% missing] <- NA
     ## missing alleles
     if (missing(alleles)) {
-        warning("alleles not provided, assuming upper/lower case")
+        warning("Alleles not provided, assuming A/a")
         alleles <- lapply(df$mv,
                           function(an) {
                               c(toupper(an), tolower(an))

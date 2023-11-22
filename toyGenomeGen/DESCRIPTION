@@ -1,0 +1,15 @@
+Package: toyGenomeGen
+Version: 0.1-0
+Encoding: UTF-8
+Title: Generating and Experimenting with Simulated Genomes
+Description: Implements a simple model of genetics to be used as a teaching aid and sandbox for non-experts curious about the basics of genetic dynamics. The main features are the genome S3 class and basic functions that support the simulation of population genomics with user-specified mechanics. Several real data sets that record mouse genomic data are included adapted from sources at the Mouse Genome Database <https://www.informatics.jax.org/>.
+Authors@R: c(person(given = "Chris", family = "Salahub", role = c("aut", "cre"), email = "csalahub@uwaterloo.ca", comment = c(ORCID = "0000-0003-3770-6798"))
+Maintainer: Chris Salahub <csalahub@uwaterloo.ca>
+Depends: R (>= 4.2.0)
+Imports:
+Suggests:
+Enhances:
+License: GPL (>= 3) | file LICENCE
+NeedsCompilation: no
+Repository: CRAN
+RoxygenNote: 7.2.3

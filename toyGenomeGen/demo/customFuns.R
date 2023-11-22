@@ -40,7 +40,7 @@ chiPop <- asPopulation(replicate(popsize,
 ## a suggested divergent palette to use when comparing correlation
 pal <- colorRampPalette(c("steelblue", "floralwhite", "firebrick"))(49)
 corBrks <- seq(-1, 1, length.out = 50)
-par(mfrow = c(1,2), mar = c(2.1, 2.1, 3.1, 0.1))
+oldPar <- par(mfrow = c(1,2), mar = c(2.1, 2.1, 3.1, 0.1))
 corrImg(popCorrelation(defPop), xaxt = "n", yaxt = "n",
         main = "Haldane map", breaks = corBrks, col = pal)
 addChromosomeLines(defPop)
@@ -87,3 +87,4 @@ addChromosomeLines(chiPop2)
 ## a wide range of different behaviours can therefore be captured
 ## with custom functions, changing the combination probabilities
 ## drastically
+par(oldPar)

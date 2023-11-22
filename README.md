@@ -2,7 +2,7 @@
 
 This repository presents and explores a simple genetic model.
 
-## toyGenomeGenR
+## toyGenomeGen
 
 First, this model is implemented using the S3 class system of R in the
 package contained in the toyGenomeGenR directory. Numerous functions to
@@ -43,4 +43,4 @@ scripts.
 
 This directory contains some short code files used to investigate the
 computation of effective dimension in genetic data. This was covered
-only briefly in the thesis, and generally seems like a bad idea.
+only briefly in my thesis, and generally seems like a bad idea.
