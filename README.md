@@ -2,7 +2,7 @@
 
 This repository presents and explores a simple genetic model.
 
-## toyGenomeGenR
+## toyGenomeGen
 
 First, this model is implemented using the S3 class system of R in the
 package contained in the toyGenomeGenR directory. Numerous functions to
