@@ -165,7 +165,7 @@ mgiMarkers <- readMGIlists() # descriptions of all markers
 mgiByChrom <- split(mgiMarkers[, c("cM Position", "Marker Symbol",
                                    "genome coordinate start",
                                    "genome coordinate end")],
-                    mgiMarkers$Chr)
+                    mgiMarkers$Chr)[chrOrder]
 mgiByChrom <- lapply(mgiByChrom, # filter by known positions
                      function(df) {
                          names(df) <- c("loc", "sym", "beg", "end")

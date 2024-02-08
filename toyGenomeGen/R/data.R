@@ -1,3 +1,18 @@
+##' Marker Positions in the Mouse Genome Database
+##'
+##' This list of data frames provides the chromosome, marker ID, cM
+##' positions, and base pair coordinates of genetic markers included
+##' in the Mouse Genome Database (https://www.informatics.jax.org/).
+##'
+##' @format
+##' A list of 20 data frames each containing columns `loc`, `sym`,
+##' `beg`, and `end` which report the cM location, marker symbol,
+##' beginning coordinate in base pairs, and end coordinate in base
+##' pairs of markers in the Mouse Genome Database.
+##'
+##' @source <https://www.informatics.jax.org/downloads/reports/MRK_List2.rpt>
+"mgiMarkers"
+
 ##' (C57BL/6J x M. spretus)F1 x C57BL/6J Data
 ##'
 ##' These data sets are population objects providing the results
